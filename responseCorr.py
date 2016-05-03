@@ -139,7 +139,7 @@ def jzbBinned(dilepton, plotData=True, corrs=False):
     template.saveAs("binned_%s_%s"%(corrString, dataInd))
     
 from plotTemplate import plotTemplate2D    
-def plotResponse(dilepton,plotData,extraArg=""):
+def doResponseCorrection(dilepton,plotData,extraArg=""):
     bkg = ["TT_Powheg","DrellYanLO", "DrellYanLOHT0to100"]
     mainConfig = dataMCConfig.dataMCConfig(plot2="responsePlot",plot="ptllresponsePlot",region="Inclusive",runName="Run2015_25ns",plotData=plotData,personalWork=True,backgrounds=bkg)
 

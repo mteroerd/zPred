@@ -13,7 +13,7 @@ import time
 
 from puCorr import doPUCorrection 
 from peakCorr import doPeakCorrection
-from Response import plotResponse
+from responseCorr import doResponseCorrection
 
 def doCorrs(var, args, extraArg):
     import dataMCConfig
@@ -26,9 +26,9 @@ def doCorrs(var, args, extraArg):
     dataMCConfig.dataMCConfig.jzbType = var
     if not args.quiet: print "%s: Response corrections..." %(var)
     if args.data:
-        plotResponse("SF",True, extraArg=extraArg)
+        doResponseCorrection("SF",True, extraArg=extraArg)
     if args.mc:
-        plotResponse("SF",False, extraArg=extraArg)
+        doResponseCorrection("SF",False, extraArg=extraArg)
     if not args.quiet: print "%s: Response corrections done." %(var)
     
     if not args.quiet: print "%s: Pile-up peak corrections..."%(var)
