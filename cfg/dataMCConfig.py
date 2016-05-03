@@ -88,8 +88,8 @@ class dataMCConfig:
                 self.plotData = plotData
                 
                 plotList = None
-                if "." in plot:
-                        plotList = plot.split(".")
+                if "#" in plot:
+                        plotList = plot.split("#")
                         plot = plotList[0]
                         plotList = plotList[1:]
                 
@@ -107,8 +107,8 @@ class dataMCConfig:
                 
                 if plot2 != None:
                         plotList = None
-                        if "." in plot2:
-                                plotList = plot2.split(".")
+                        if "#" in plot2:
+                                plotList = plot2.split("#")
                                 plot2 = plotList[0]
                                 plotList = plotList[1:]
                         
