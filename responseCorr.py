@@ -252,7 +252,7 @@ def main():
 
     processes = []
     #processes += [mp.Process(target=jzbBinned, args=("SF", plotData, responseCorr)) for plotData in [False, True] for responseCorr in [False, True]]
-    processes += [mp.Process(target=plotResponse, args=("SF", plotData)) for plotData in [False, True]]
+    processes += [mp.Process(target=doResponseCorrection, args=("SF", plotData)) for plotData in [False, True]]
     for p in processes:
         p.start()
     for p in processes:
