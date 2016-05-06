@@ -31,6 +31,7 @@ import math
 
 from centralConfig import plotLists
 from plotTemplate import plotTemplate2D
+from sampleConfig import getBackgrounds
 
 def produceHistogram2D(dilepton,mainConfig):
     eventCounts = totalNumberOfGeneratedEvents(mainConfig.dataSetPath)  
@@ -102,7 +103,7 @@ def produceHistogram2D(dilepton,mainConfig):
     return fullHist
 
 def METJZBPlot(nJets, responseCorr, puCorr, peakCorr, metCorr):
-    bkg = ["DrellYanLO", "DrellYanLOHT0to100"] #"ZZWZ",
+    bkg = getBackgrounds("DY")
 
     mainConfig_pos = dataMCConfig.dataMCConfig(plot="met2DPlot_%dj"%(nJets), plot2="jzb2DPlot_pos",region="Inclusive",runName="Run2015_25ns",plotData=False,normalizeToData=False,plotRatio=False,signals=False,useTriggerEmulation=True,personalWork=True,preliminary=False,forPAS=False,forTWIKI=False,backgrounds=bkg,dontScaleTrig=False,plotSyst=False,doPUWeights=False, responseCorr=responseCorr, puCorr=puCorr, peakCorr=peakCorr, correctMET=False)
     mainConfig_neg = dataMCConfig.dataMCConfig(plot="met2DPlot_%dj"%(nJets), plot2="jzb2DPlot_neg",region="Inclusive",runName="Run2015_25ns",plotData=False,normalizeToData=False,plotRatio=False,signals=False,useTriggerEmulation=True,personalWork=True,preliminary=False,forPAS=False,forTWIKI=False,backgrounds=bkg,dontScaleTrig=False,plotSyst=False,doPUWeights=False, responseCorr=responseCorr, puCorr=puCorr, peakCorr=peakCorr, correctMET=metCorr)

@@ -34,6 +34,7 @@ import math
 
 from centralConfig import plotLists
 from plotTemplate import plotTemplate, plotTemplate2D
+from sampleConfig import getBackgrounds
 
 def gaussianFit(histo, lowRange, upRange,step):
     fitFunc = TF1("name", "gaus", lowRange, upRange)
@@ -54,7 +55,7 @@ def gaussianFit(histo, lowRange, upRange,step):
     return fitFunc    
 
 def doPUCorrection(dilepton,plotData=True,nJets=2,extraArg=""):
-    bkg = ["TT_Powheg","DrellYanLO", "DrellYanLOHT0to100"]
+    bkg = getBackgrounds("TT", "DY")
     mainConfig = dataMCConfig.dataMCConfig(plot="nVerticesPlot",plot2="jzbPlot_Corrs_%dj"%(nJets),region="Inclusive",runName="Run2015_25ns",plotData=plotData,normalizeToData=False,plotRatio=False,signals=False,useTriggerEmulation=True,personalWork=False,preliminary=False,forPAS=False,forTWIKI=False,backgrounds=bkg,dontScaleTrig=False,plotSyst=False,doPUWeights=False, responseCorr=True)
 
     eventCounts = totalNumberOfGeneratedEvents(mainConfig.dataSetPath)  

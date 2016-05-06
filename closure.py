@@ -31,6 +31,7 @@ import math
 
 from centralConfig import plotLists
 from plotTemplate import plotTemplate
+from sampleConfig import getBackgrounds
 
 def produceHistogram(dilepton,mainConfig,stackIt = False,output=None, sort=None):
     eventCounts = totalNumberOfGeneratedEvents(mainConfig.dataSetPath)  
@@ -104,7 +105,7 @@ def produceHistogram(dilepton,mainConfig,stackIt = False,output=None, sort=None)
     
 
 def closureTestMC(var, nJets=2, dilepton="SF"):
-    bkg = ["DrellYanLO", "DrellYanLOHT0to100"]
+    bkg = getBackgrounds("DY")
     mainConfig_a = dataMCConfig.dataMCConfig(plot="%s_pos_%dj"%(var, nJets),region="Inclusive",runName="Run2015_25ns",plotData=False,normalizeToData=False,plotRatio=True,signals=False,useTriggerEmulation=True,personalWork=True,preliminary=False,forPAS=False,forTWIKI=False,backgrounds=bkg,dontScaleTrig=False,plotSyst=False,doPUWeights=False, responseCorr=True, puCorr=True, peakCorr=True,correctMET=False)
     mainConfig_b = dataMCConfig.dataMCConfig(plot="%s_neg_%dj"%(var, nJets),region="Inclusive",runName="Run2015_25ns",plotData=False,normalizeToData=False,plotRatio=True,signals=False,useTriggerEmulation=True,personalWork=True,preliminary=False,forPAS=False,forTWIKI=False,backgrounds=bkg,dontScaleTrig=False,plotSyst=False,doPUWeights=False, responseCorr=True, puCorr=True, peakCorr=True)
     
@@ -168,11 +169,11 @@ def closureTestMC(var, nJets=2, dilepton="SF"):
     template.saveAs("%s_%dj_%s_Closure_Test_MC"%(var,nJets,dilepton))
    
 def compareJZBforSamples():
-    bkg = ["DrellYanLO"]
-    mainConfig = dataMCConfig.dataMCConfig(plot="jzbPlot_3j_allMasses",region="Inclusive",runName="Run2015_25ns",plotData=False,normalizeToData=False,plotRatio=True,signals=False,useTriggerEmulation=True,personalWork=False,preliminary=False,forPAS=False,forTWIKI=False,backgrounds=bkg,dontScaleTrig=False,plotSyst=False,doPUWeights=False, responseCorr=True, puCorr=True, peakCorr=True,correctMET=False)
+    bkg = getBackgrounds("DY")
+    mainConfig = dataMCConfig.dataMCConfig(plot="jzbPlot_3j_allMasses",region="Inclusive",runName="Run2015_25ns",plotData=False,normalizeToData=False,plotRatio=False,signals=False,useTriggerEmulation=True,personalWork=True,preliminary=False,forPAS=False,forTWIKI=False,backgrounds=bkg,dontScaleTrig=False,plotSyst=False,doPUWeights=False, responseCorr=True, puCorr=True, peakCorr=True,correctMET=False)
     histDY = produceHistogram("SF",mainConfig)
-    bkg = ["TT_Powheg"]
-    mainConfig = dataMCConfig.dataMCConfig(plot="jzbPlot_3j_allMasses",region="Inclusive",runName="Run2015_25ns",plotData=False,normalizeToData=False,plotRatio=True,signals=False,useTriggerEmulation=True,personalWork=False,preliminary=False,forPAS=False,forTWIKI=False,backgrounds=bkg,dontScaleTrig=False,plotSyst=False,doPUWeights=False, responseCorr=True, puCorr=True, peakCorr=True,correctMET=False)
+    bkg = getBackgrounds("TT")
+    mainConfig = dataMCConfig.dataMCConfig(plot="jzbPlot_3j_allMasses",region="Inclusive",runName="Run2015_25ns",plotData=False,normalizeToData=False,plotRatio=False,signals=False,useTriggerEmulation=True,personalWork=True,preliminary=False,forPAS=False,forTWIKI=False,backgrounds=bkg,dontScaleTrig=False,plotSyst=False,doPUWeights=False, responseCorr=True, puCorr=True, peakCorr=True,correctMET=False)
     histTTBAR = produceHistogram("SF",mainConfig)
     
     SUSYTreesEE = readTrees("/user/teroerde/trees/sw7414v2005/", "EE")
@@ -201,54 +202,32 @@ def compareJZBforSamples():
     histTTBAR.Scale(1./histTTBAR.Integral())
     histSUSY.Scale(1./histSUSY.Integral())
     
-    histDY.SetMaximum(histDY.GetMaximum()*0.5e2)
     histDY.SetMinimum(1e-3)
     
-    histDY.Draw("hist")
-    histTTBAR.Draw("same hist")
-    histSUSY.Draw("same hist")
+    template.setPrimaryPlot(histDY,"hist")
+    template.addSecondaryPlot(histTTBAR, "hist")
+    template.addSecondaryPlot(histSUSY, "hist")
+    template.lumiInt = None
+
+    template.dilepton = "SF"
+    template.logY = True
+    template.maximumScale = 0.5e2
+    template.regionName = "Inclusive"
+    template.cutsText = "#geq3j" 
     
-    dilepton = "SF"
-    if dilepton == "SF":
-        dileptonLabel = "ee + #mu#mu"
-    elif dilepton == "EE":
-        dileptonLabel = "ee"
-    elif dilepton == "MuMu":
-        dileptonLabel = "#mu#mu"
-    elif dilepton == "EMu":
-        dileptonLabel = "e#mu"
-    
-    direction = "Inclusive"
-    jetind = ", #geq3j" 
-    
-    intlumi.DrawLatex(0.65,0.90,"#splitline{%s}{%s}"%(direction+jetind,dileptonLabel))
-    #intlumi2.DrawLatex(0.55,0.83,"Z+Jets only")           
-    latex.DrawLatex(0.95, 0.96, "(13 TeV)")
-    
+    template.draw()
+
     leg = ROOT.TLegend(0.55,0.73,0.93,0.84)
     leg.SetFillStyle(0)
     leg.SetBorderSize(0)
     leg.AddEntry(histDY, "LO DY+jets", "l")
     leg.AddEntry(histTTBAR, "t#bar{t} Powheg", "l")
     leg.AddEntry(histSUSY, "SUSY Signal", "l")
-    #leg.SetNColumns(2)
     leg.Draw("same")
     
-  
-    cmsExtra = "#splitline{Private Work}{Simulation}"
-    yLabelPos = 0.82    
-    
-      
-    if mainConfig.forPAS:
-        latexCMS.DrawLatex(0.15,0.955,"CMS")
-        latexCMSExtra.DrawLatex(0.26,0.955,"%s"%(cmsExtra))             
-    else:
-        latexCMS.DrawLatex(0.19,0.89,"CMS")
-        latexCMSExtra.DrawLatex(0.19,yLabelPos,"%s"%(cmsExtra))
-    
-    prefix = mainConfig.prefix
-    ensurePathExists("fig/%s/JZBCompare/"%(prefix))
-    hCanvas.Print("fig/%s/JZBCompare/comparison.pdf"%(prefix),)
+
+    template.setFolderName("JZBCompare")
+    template.saveAs("comparison")
     
 def main():
     import multiprocessing as mp
@@ -256,12 +235,12 @@ def main():
     t1 = time.time()
     processes = []
     #processes += [mp.Process(target=closureTestMC, args=(var, nJets)) for nJets in [2,3] for var in ["metDiffPlot"]]
-    processes += [mp.Process(target=closureTestMC, args=(var, nJets,dil)) for dil in ["SF"] for nJets in [2,3] for var in ["jzbPlot", "metPlot"]]
+    #processes += [mp.Process(target=closureTestMC, args=(var, nJets,dil)) for dil in ["SF"] for nJets in [2,3] for var in ["jzbPlot", "metPlot"]]
     for p in processes:
         p.start()
     for p in processes:
         p.join()
-    #compareJZBforSamples()
+    compareJZBforSamples()
     print str(time.time()-t1)+" seconds elapsed"
 
 if __name__ == "__main__":

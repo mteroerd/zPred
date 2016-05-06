@@ -30,10 +30,11 @@ from helpers import *
 import math
 
 from centralConfig import plotLists
-from plotTemplate import plotTemplate
+from plotTemplate import plotTemplate, plotTemplate2D  
+from sampleConfig import getBackgrounds
 
 def jzbBinned(dilepton, plotData=True, corrs=False):
-    bkg = ["TT_Powheg","DrellYanLO", "DrellYanLOHT0to100"]
+    bkg = getBackgrounds("DY", "TT")
     mainConfig = dataMCConfig.dataMCConfig(plot="jzbPlot",region="Inclusive",runName="Run2015_25ns",plotData=plotData,normalizeToData=False,plotRatio=False,signals=False,useTriggerEmulation=True,personalWork=True, preliminary=False,forPAS=False,forTWIKI=False,backgrounds=bkg,dontScaleTrig=False,plotSyst=False,doPUWeights=False)
 
     eventCounts = totalNumberOfGeneratedEvents(mainConfig.dataSetPath)  
@@ -137,10 +138,9 @@ def jzbBinned(dilepton, plotData=True, corrs=False):
     
     template.setFolderName("JZBBinned")
     template.saveAs("binned_%s_%s"%(corrString, dataInd))
-    
-from plotTemplate import plotTemplate2D    
+      
 def doResponseCorrection(dilepton,plotData,extraArg=""):
-    bkg = ["TT_Powheg","DrellYanLO", "DrellYanLOHT0to100"]
+    bkg = getBackgrounds("TT", "DY")
     mainConfig = dataMCConfig.dataMCConfig(plot2="responsePlot",plot="ptllresponsePlot",region="Inclusive", plotRatio=False,runName="Run2015_25ns",plotData=plotData,personalWork=True,backgrounds=bkg)
 
     template = plotTemplate2D(mainConfig)        

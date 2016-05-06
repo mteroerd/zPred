@@ -31,6 +31,7 @@ from helpers import *
 import math
 
 from centralConfig import plotLists
+from sampleConfig import getBackgrounds
 
 ERROR_MODE = 2 # 0 only stat, 1 stat and sys, 2 only sys, 3 only pure sys
 
@@ -105,7 +106,7 @@ def produceHistogram(dilepton,mainConfig,stackIt = False):
     return fullHist
 
 def getObservedFromSignalRegion(output,region, nJets):
-    bkg = ["DrellYanLO"]#,"ZZWZ"
+    bkg = getBackgrounds("DY")
     mainConfig = dataMCConfig.dataMCConfig(plot="mllFinePlot",region="Signal%s%dj"%(region,nJets),runName="Run2015_25ns",plotData=False,normalizeToData=False,plotRatio=True,signals=False,useTriggerEmulation=True,personalWork=False,preliminary=False,forPAS=False,forTWIKI=False,backgrounds=bkg,dontScaleTrig=False,plotSyst=False,doPUWeights=False)
     
     result = {nJets:{region : {}}}
@@ -116,7 +117,7 @@ def getObservedFromSignalRegion(output,region, nJets):
     output.put(result)
     
 def getFromSignalRegionNew(output,plotData, region, nJets, dileptons):    
-    bkg = ["DrellYanLO", "TT_Powheg"]#"ZZWZ",, "TT_Powheg"
+    bkg = getBackgrounds("TT", "DY")
 
     mainConfig = dataMCConfig.dataMCConfig(plot="mllPlot_neg",region="Signal%s%dj"%(region,nJets),runName="Run2015_25ns",plotData=plotData,normalizeToData=False,plotRatio=True,signals=False,useTriggerEmulation=True,personalWork=False,preliminary=False,forPAS=False,forTWIKI=False,backgrounds=bkg,dontScaleTrig=False,plotSyst=False,doPUWeights=False, responseCorr=True, puCorr=True, peakCorr=True)
     mainConfig2 = dataMCConfig.dataMCConfig(plot="mllPlot_neg",region="Signal%s%dj"%(region,nJets),runName="Run2015_25ns",plotData=plotData,normalizeToData=False,plotRatio=True,signals=False,useTriggerEmulation=True,personalWork=False,preliminary=False,forPAS=False,forTWIKI=False,backgrounds=bkg,dontScaleTrig=False,plotSyst=False,doPUWeights=False, responseCorr=True, puCorr=True, peakCorr=True,correctMET=False)
