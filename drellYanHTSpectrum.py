@@ -128,14 +128,15 @@ def plotHTSpectrum(nJets, dilepton="SF"):
     template.setPrimaryPlot(SF, "HISTE")
     
     if nJets==0:
-        jetind= ""
+        jetInd= ""
     elif nJets==3:
-        jetind = "#geq3j"
+        jetInd = "#geq3j"
     elif nJets==2:
-         jetind = "=2j"
-    template.cutsText = "#splitline{%s}{%s}"%("Z+jets only",jetind)
-    template.cutsPosX = 0.80
-    template.cutsPosY = 0.87
+        jetInd = "=2j"
+    template.cutsText = jetInd
+    template.regionName = "Z+Jets only"
+    #template.cutsPosX = 0.80
+    #template.cutsPosY = 0.87
     
     
     template.draw()
