@@ -32,8 +32,6 @@ import math
 
 from centralConfig import plotLists
 
-ERR_3J = 0.15
-ERR_2J = 0.30
 ERROR_MODE = 2 # 0 only stat, 1 stat and sys, 2 only sys, 3 only pure sys
 
 def produceHistogram(dilepton,mainConfig,stackIt = False):
@@ -145,8 +143,8 @@ def getFromSignalRegionNew(output,plotData, region, nJets, dileptons):
         dil2_err = ROOT.Double()
         dil2 = NEG2_dil.IntegralAndError(1, NEG2_dil.GetNbinsX(), dil2_err)
         #print dilepton, region, nJets, dil
-        sys_err = ERR_2J if nJets == 2 else ERR_3J
-        
+        import errorConfig
+        sys_err = getattr(errorConfig.DYPredError, region).ERR[nJets]
         fac = float(getattr(getattr(R[dilepton],region.lower()),"val"+add))
         result[nJets][region][dilepton] = (dil+dil2, 2*max(float(dil2_err),float(dil_err)), (dil-fac*of)*sys_err)
     

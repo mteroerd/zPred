@@ -30,7 +30,7 @@ from helpers import *
 import math
 
 from centralConfig import plotLists
-
+from plotTemplate import plotTemplate
 
 def produceHistogram(dilepton,mainConfig,stackIt = False,output=None, sort=None):
     eventCounts = totalNumberOfGeneratedEvents(mainConfig.dataSetPath)  
@@ -102,7 +102,7 @@ def produceHistogram(dilepton,mainConfig,stackIt = False,output=None, sort=None)
     return fullHist
 
     
-from plotTemplate import plotTemplate
+
 def closureTestMC(var, nJets=2, dilepton="SF"):
     bkg = ["DrellYanLO", "DrellYanLOHT0to100"]
     mainConfig_a = dataMCConfig.dataMCConfig(plot="%s_pos_%dj"%(var, nJets),region="Inclusive",runName="Run2015_25ns",plotData=False,normalizeToData=False,plotRatio=True,signals=False,useTriggerEmulation=True,personalWork=True,preliminary=False,forPAS=False,forTWIKI=False,backgrounds=bkg,dontScaleTrig=False,plotSyst=False,doPUWeights=False, responseCorr=True, puCorr=True, peakCorr=True,correctMET=False)
@@ -140,7 +140,9 @@ def closureTestMC(var, nJets=2, dilepton="SF"):
     template.ratioLabel = "JZB>0/JZB<0"
     template.hasRatio = True
     
-    ERR = 0.15 if nJets == 3 else 0.3
+    import errorConfig
+    ERR = getattr(errorConfig.DYPredError, "Inclusive").ERR[nJets]
+    #ERR = 0.15 if nJets == 3 else 0.3
     template.addRatioErrorBySize("Mismatch of spectra", ERR, ROOT.kGreen, 1001, False)
     
     template.draw()
