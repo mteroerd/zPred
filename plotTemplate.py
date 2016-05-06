@@ -396,7 +396,6 @@ class plotTemplate:
             
             if dileptonLabel != "":
                 if self.regionName != "":
-                    print "hier"
                     self.latexRegion2 = self.latexRegion.Clone()
                     self.latexRegion.DrawLatex(self.regionPosX,self.regionPosY+0.5*self.regionSize,self.regionName) 
                     self.latexRegion2.DrawLatex(self.regionPosX,self.regionPosY-0.5*self.regionSize,dileptonLabel)
