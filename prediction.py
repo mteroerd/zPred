@@ -33,7 +33,7 @@ import math
 from centralConfig import plotLists
 from sampleConfig import getBackgrounds
 
-ERROR_MODE = 2 # 0 only stat, 1 stat and sys, 2 only sys, 3 only pure sys
+ERROR_MODE = 1 # 0 only stat, 1 stat and sys, 2 only sys, 3 only pure sys
 
 def produceHistogram(dilepton,mainConfig,stackIt = False):
     eventCounts = totalNumberOfGeneratedEvents(mainConfig.dataSetPath)  
@@ -360,12 +360,12 @@ def main():
     pred = combineResultsNew(True)
     #pred = combineResults(True)
     
-    print "PRED MC"
+    #print "PRED MC"
     #pred = combineResults(False)
-    pred = combineResultsNew(False)
+    #pred = combineResultsNew(False)
 
     #print "OBS MC"
-    #obs = combineObsMC(["SF"])
+    #obs = combineObsMC()
 
 
     print str(time.time()-t1)+" seconds elapsed"

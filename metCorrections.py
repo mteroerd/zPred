@@ -134,6 +134,37 @@ def METJZBPlot(nJets, responseCorr, puCorr, peakCorr, metCorr):
     template.cutsText = jetInd
     template.dilepton = "SF"
     
+    responseText = "Response corrections: No"
+    if responseCorr:
+            responseText = "Response corrections: Yes"
+    puText = "Pile-Up corrections: No"
+    if puCorr:
+            puText = "Pile-Up corrections: Yes"
+    peakText = "Peak corrections: No"
+    if peakCorr:
+            peakText = "Peak corrections: Yes"
+    metText = "Propagation to E_{T}^{miss}: No"
+    if metCorr:
+            metText = "Propagation to E_{T}^{miss}: Yes"
+            
+    
+    responseLatex = ROOT.TLatex()
+    responseLatex.SetNDC(True)
+    responseLatex.SetTextFont(42)
+    responseLatex.SetTextSize(0.035)
+    responseLatex.SetText(0.17, 0.3, responseText)
+    puLatex = responseLatex.Clone()
+    puLatex.SetText(0.17, 0.26, puText)
+    peakLatex = responseLatex.Clone()
+    peakLatex.SetText(0.17, 0.22, peakText)
+    metLatex = responseLatex.Clone()
+    metLatex.SetText(0.17, 0.18, metText)
+    
+    template.addSecondaryPlot(responseLatex)
+    template.addSecondaryPlot(puLatex)
+    template.addSecondaryPlot(peakLatex)
+    template.addSecondaryPlot(metLatex)
+    
     nameModifier = "MC"
     
     template.draw()

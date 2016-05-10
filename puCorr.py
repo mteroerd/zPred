@@ -56,7 +56,7 @@ def gaussianFit(histo, lowRange, upRange,step):
 
 def doPUCorrection(dilepton,plotData=True,nJets=2,extraArg=""):
     bkg = getBackgrounds("TT", "DY")
-    mainConfig = dataMCConfig.dataMCConfig(plot="nVerticesPlot",plot2="jzbPlot_Corrs_%dj"%(nJets),region="Inclusive",runName="Run2015_25ns",plotData=plotData,normalizeToData=False,plotRatio=False,signals=False,useTriggerEmulation=True,personalWork=False,preliminary=False,forPAS=False,forTWIKI=False,backgrounds=bkg,dontScaleTrig=False,plotSyst=False,doPUWeights=False, responseCorr=True)
+    mainConfig = dataMCConfig.dataMCConfig(plot="nVerticesPlot",plot2="jzbPlot_Corrs_%dj"%(nJets),region="Inclusive",runName="Run2015_25ns",plotData=plotData,normalizeToData=False,plotRatio=False,signals=False,useTriggerEmulation=True,personalWork=True,preliminary=False,forPAS=False,forTWIKI=False,backgrounds=bkg,dontScaleTrig=False,plotSyst=False,doPUWeights=False, responseCorr=True)
 
     eventCounts = totalNumberOfGeneratedEvents(mainConfig.dataSetPath)  
     processes = []
@@ -113,6 +113,8 @@ def doPUCorrection(dilepton,plotData=True,nJets=2,extraArg=""):
     template.dilepton = dilepton
     template.logZ = True
     template.labelZ = "Events"
+    jetInd = "#geq3j" if nJets == 3 else "=2j"
+    template.cutsText = jetInd
     
     if mainConfig.plotData:
         fullHist = getData2DHist(plot,plot2, tree1, tree2)     
@@ -132,7 +134,7 @@ def doPUCorrection(dilepton,plotData=True,nJets=2,extraArg=""):
     template.saveAs("pu2Dplot_%dj_%s"%(nJets,dataInd))
     
     
-    template = plotTemplate()
+    template = plotTemplate(mainConfig)
     template.dilepton = dilepton
     template.changeScale = False
     

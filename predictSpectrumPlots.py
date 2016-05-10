@@ -30,6 +30,7 @@ from helpers import *
 import math
 
 from centralConfig import regionsToUse
+from plotTemplate import plotTemplate
 
 def produceHistograms(plot):
     dataSetPath = locations.dataSetPath
@@ -48,7 +49,6 @@ def getLines(yMin,yMax, xPos = [70.,81., 101., 120]):
         result[-1].SetLineStyle(2)
     return result
 
-from plotTemplate import plotTemplate
 def makePrediction(region, dil, plot, TT_full, R, data, histTT, histDY, histDYScale):
     template = plotTemplate(TT_full)
     
@@ -188,7 +188,6 @@ def makePrediction(region, dil, plot, TT_full, R, data, histTT, histDY, histDYSc
     template.clean()
     
 def startPrediction(region):
-    
     #initialize plots
     TT_full = dataMCConfig.dataMCConfig(plot="mllPlot",region="Signal"+region,runName="Run2015_25ns",plotData=True)
     DYScale = dataMCConfig.dataMCConfig(plot="mllPlotROutIn",region=getattr(regionsToUse.rOutIn, region.lower()).name,runName="Run2015_25ns",plotData=True)

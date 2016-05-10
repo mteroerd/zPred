@@ -105,6 +105,7 @@ def produceHistogram(dilepton,mainConfig,stackIt = False,output=None, sort=None)
     
 
 def closureTestMC(var, nJets=2, dilepton="SF"):
+    dataMCConfig.dataMCConfig.jzbType = "unCorrMet"
     bkg = getBackgrounds("DY")
     mainConfig_a = dataMCConfig.dataMCConfig(plot="%s_pos_%dj"%(var, nJets),region="Inclusive",runName="Run2015_25ns",plotData=False,normalizeToData=False,plotRatio=True,signals=False,useTriggerEmulation=True,personalWork=True,preliminary=False,forPAS=False,forTWIKI=False,backgrounds=bkg,dontScaleTrig=False,plotSyst=False,doPUWeights=False, responseCorr=True, puCorr=True, peakCorr=True,correctMET=False)
     mainConfig_b = dataMCConfig.dataMCConfig(plot="%s_neg_%dj"%(var, nJets),region="Inclusive",runName="Run2015_25ns",plotData=False,normalizeToData=False,plotRatio=True,signals=False,useTriggerEmulation=True,personalWork=True,preliminary=False,forPAS=False,forTWIKI=False,backgrounds=bkg,dontScaleTrig=False,plotSyst=False,doPUWeights=False, responseCorr=True, puCorr=True, peakCorr=True)
@@ -170,22 +171,24 @@ def closureTestMC(var, nJets=2, dilepton="SF"):
    
 def compareJZBforSamples():
     bkg = getBackgrounds("DY")
-    mainConfig = dataMCConfig.dataMCConfig(plot="jzbPlot_3j_allMasses",region="Inclusive",runName="Run2015_25ns",plotData=False,normalizeToData=False,plotRatio=False,signals=False,useTriggerEmulation=True,personalWork=True,preliminary=False,forPAS=False,forTWIKI=False,backgrounds=bkg,dontScaleTrig=False,plotSyst=False,doPUWeights=False, responseCorr=True, puCorr=True, peakCorr=True,correctMET=False)
-    histDY = produceHistogram("SF",mainConfig)
-    bkg = getBackgrounds("TT")
-    mainConfig = dataMCConfig.dataMCConfig(plot="jzbPlot_3j_allMasses",region="Inclusive",runName="Run2015_25ns",plotData=False,normalizeToData=False,plotRatio=False,signals=False,useTriggerEmulation=True,personalWork=True,preliminary=False,forPAS=False,forTWIKI=False,backgrounds=bkg,dontScaleTrig=False,plotSyst=False,doPUWeights=False, responseCorr=True, puCorr=True, peakCorr=True,correctMET=False)
-    histTTBAR = produceHistogram("SF",mainConfig)
+    mainConfigDY = dataMCConfig.dataMCConfig(plot="jzbPlot_3j_allMasses",region="Inclusive",runName="Run2015_25ns",plotData=False,normalizeToData=False,plotRatio=False,signals=False,useTriggerEmulation=True,personalWork=True,preliminary=False,forPAS=False,forTWIKI=False,backgrounds=bkg,dontScaleTrig=False,plotSyst=False,doPUWeights=False, responseCorr=True, puCorr=True, peakCorr=True,correctMET=False)
     
+    bkg = getBackgrounds("TT")
+    mainConfigTT = dataMCConfig.dataMCConfig(plot="jzbPlot_3j_allMasses",region="Inclusive",runName="Run2015_25ns",plotData=False,normalizeToData=False,plotRatio=False,signals=False,useTriggerEmulation=True,personalWork=True,preliminary=False,forPAS=False,forTWIKI=False,backgrounds=bkg,dontScaleTrig=False,plotSyst=False,doPUWeights=False, responseCorr=True, puCorr=True, peakCorr=True,correctMET=False)
+
     SUSYTreesEE = readTrees("/user/teroerde/trees/sw7414v2005/", "EE")
     SUSYTreesMuMu = readTrees("/user/teroerde/trees/sw7414v2005/", "MuMu")
     
     EE = SUSYTreesEE["T6bbllslepton_msbottom_400_mneutralino_150"]
     MuMu = SUSYTreesMuMu["T6bbllslepton_msbottom_400_mneutralino_150"]
     
-    template = plotTemplate(mainConfig)
+    template = plotTemplate(mainConfigTT)
     
-    histEE = createHistoFromTree(EE, mainConfig.plot.variable, mainConfig.plot.cuts,80,-200,200, binning=[])
-    histMuMu = createHistoFromTree(MuMu, mainConfig.plot.variable, mainConfig.plot.cuts,80,-200,200, binning=[])
+    histDY = produceHistogram("SF",mainConfigDY)
+    histTTBAR = produceHistogram("SF",mainConfigTT)
+    
+    histEE = createHistoFromTree(EE, mainConfigTT.plot.variable, mainConfigTT.plot.cuts,80,-200,200, binning=[])
+    histMuMu = createHistoFromTree(MuMu, mainConfigTT.plot.variable, mainConfigTT.plot.cuts,80,-200,200, binning=[])
     histSUSY = histEE.Clone()
     histSUSY.Add(histMuMu.Clone(),1)
     
@@ -235,12 +238,12 @@ def main():
     t1 = time.time()
     processes = []
     #processes += [mp.Process(target=closureTestMC, args=(var, nJets)) for nJets in [2,3] for var in ["metDiffPlot"]]
-    #processes += [mp.Process(target=closureTestMC, args=(var, nJets,dil)) for dil in ["SF"] for nJets in [2,3] for var in ["jzbPlot", "metPlot"]]
+    processes += [mp.Process(target=closureTestMC, args=(var, nJets,dil)) for dil in ["SF"] for nJets in [2,3] for var in ["jzbPlot", "metPlot"]]
     for p in processes:
         p.start()
     for p in processes:
         p.join()
-    compareJZBforSamples()
+    #compareJZBforSamples()
     print str(time.time()-t1)+" seconds elapsed"
 
 if __name__ == "__main__":
