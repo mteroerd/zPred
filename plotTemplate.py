@@ -17,7 +17,7 @@ from helpers import *
 colors = createMyColors() 
 import math
 
-################## SUMMARY OF CLASS #####################################################################
+################## SUMMARY OF CLASS plotTemplate ############################################################
 ## Constructors:
 # * plotTemplate()
 # * plotTemplate(mainConfig)
@@ -501,9 +501,9 @@ class plotTemplate:
         self.drawLatexLabels()
         self.plotPad.RedrawAxis()
         
-        self.doRatioPlots()
+        self.drawRatioPlots()
         
-    def doRatioPlots(self):
+    def drawRatioPlots(self):
         if self.hasRatio or self.hasEfficiency:
             self.ratioPad.cd()
             if self.hasRatio:
@@ -564,5 +564,6 @@ class plotTemplate2D(plotTemplate):
     def __init__(self, mainConfig=None):
         plotTemplate.__init__(self, mainConfig)
         if mainConfig is not None:
-            if mainConfig.plot is not None:
-                self.labelY = mainConfig.plot2.xaxis
+            if hasattr(mainConfig, plot2):
+                if mainConfig.plot2 is not None:
+                    self.labelY = mainConfig.plot2.xaxis

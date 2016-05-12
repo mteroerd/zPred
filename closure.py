@@ -105,7 +105,6 @@ def produceHistogram(dilepton,mainConfig,stackIt = False,output=None, sort=None)
     
 
 def closureTestMC(var, nJets=2, dilepton="SF"):
-    dataMCConfig.dataMCConfig.jzbType = "unCorrMet"
     bkg = getBackgrounds("DY")
     mainConfig_a = dataMCConfig.dataMCConfig(plot="%s_pos_%dj"%(var, nJets),region="Inclusive",runName="Run2015_25ns",plotData=False,normalizeToData=False,plotRatio=True,signals=False,useTriggerEmulation=True,personalWork=True,preliminary=False,forPAS=False,forTWIKI=False,backgrounds=bkg,dontScaleTrig=False,plotSyst=False,doPUWeights=False, responseCorr=True, puCorr=True, peakCorr=True,correctMET=False)
     mainConfig_b = dataMCConfig.dataMCConfig(plot="%s_neg_%dj"%(var, nJets),region="Inclusive",runName="Run2015_25ns",plotData=False,normalizeToData=False,plotRatio=True,signals=False,useTriggerEmulation=True,personalWork=True,preliminary=False,forPAS=False,forTWIKI=False,backgrounds=bkg,dontScaleTrig=False,plotSyst=False,doPUWeights=False, responseCorr=True, puCorr=True, peakCorr=True)
@@ -144,7 +143,6 @@ def closureTestMC(var, nJets=2, dilepton="SF"):
     
     import errorConfig
     ERR = getattr(errorConfig.DYPredError, "Inclusive").ERR[nJets]
-    #ERR = 0.15 if nJets == 3 else 0.3
     template.addRatioErrorBySize("Mismatch of spectra", ERR, ROOT.kGreen, 1001, False)
     
     template.draw()

@@ -37,6 +37,7 @@ def configurePlot(plot, jzbType, plotData, responseCorr, puCorr, peakCorr,correc
 class dataMCConfig:
         #jzbType = "unCorrMet"
         jzbType = "type-IMet"
+        #jzbType = "puppiMet"
         responseCorr = False
         puCorr = False
         peakCorr = False
