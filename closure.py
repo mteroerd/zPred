@@ -104,10 +104,10 @@ def produceHistogram(dilepton,mainConfig,stackIt = False,output=None, sort=None)
 
     
 
-def closureTestMC(var, nJets=2, dilepton="SF"):
+def closureTestMC(var, nJets=2, dilepton="SF",region="Inclusive"):
     bkg = getBackgrounds("DY")
-    mainConfig_a = dataMCConfig.dataMCConfig(plot="%s_pos_%dj"%(var, nJets),region="Inclusive",runName="Run2015_25ns",plotData=False,normalizeToData=False,plotRatio=True,signals=False,useTriggerEmulation=True,personalWork=True,preliminary=False,forPAS=False,forTWIKI=False,backgrounds=bkg,dontScaleTrig=False,plotSyst=False,doPUWeights=False, responseCorr=True, puCorr=True, peakCorr=True,correctMET=False)
-    mainConfig_b = dataMCConfig.dataMCConfig(plot="%s_neg_%dj"%(var, nJets),region="Inclusive",runName="Run2015_25ns",plotData=False,normalizeToData=False,plotRatio=True,signals=False,useTriggerEmulation=True,personalWork=True,preliminary=False,forPAS=False,forTWIKI=False,backgrounds=bkg,dontScaleTrig=False,plotSyst=False,doPUWeights=False, responseCorr=True, puCorr=True, peakCorr=True)
+    mainConfig_a = dataMCConfig.dataMCConfig(plot="%s_pos_%dj"%(var, nJets),region=region,runName="Run2015_25ns",plotData=False,normalizeToData=False,plotRatio=True,signals=False,useTriggerEmulation=True,personalWork=True,preliminary=False,forPAS=False,forTWIKI=False,backgrounds=bkg,dontScaleTrig=False,plotSyst=False,doPUWeights=False, responseCorr=True, puCorr=True, peakCorr=True,correctMET=False)
+    mainConfig_b = dataMCConfig.dataMCConfig(plot="%s_neg_%dj"%(var, nJets),region=region,runName="Run2015_25ns",plotData=False,normalizeToData=False,plotRatio=True,signals=False,useTriggerEmulation=True,personalWork=True,preliminary=False,forPAS=False,forTWIKI=False,backgrounds=bkg,dontScaleTrig=False,plotSyst=False,doPUWeights=False, responseCorr=True, puCorr=True, peakCorr=True)
     
     template = plotTemplate(mainConfig_a)
     
@@ -115,23 +115,23 @@ def closureTestMC(var, nJets=2, dilepton="SF"):
     NEG_SF = produceHistogram(dilepton,mainConfig_b,stackIt=True)
 
     OBS_SF = POS_SF.Clone()
-    PRED_SF = NEG_SF
+    PRED_SF = NEG_SF.theHistogram
 
     pred_err = ROOT.Double()
-    pred = PRED_SF.theHistogram.IntegralAndError(0,PRED_SF.theHistogram.GetNbinsX(), pred_err)
+    pred = PRED_SF.IntegralAndError(0,PRED_SF.GetNbinsX(), pred_err)
     obs_err = ROOT.Double()
     obs = OBS_SF.IntegralAndError(0,OBS_SF.GetNbinsX(), obs_err)
     
-    PRED_SF.theHistogram.SetLineColor(ROOT.kBlack)
-    PRED_SF.theHistogram.SetLineWidth(2)
-    PRED_SF.theHistogram.SetMarkerSize(0)
+    PRED_SF.SetLineColor(ROOT.kBlack)
+    PRED_SF.SetLineWidth(2)
+    PRED_SF.SetMarkerSize(0)
 
     template.setPrimaryPlot(OBS_SF, "PE")
     template.maximumScale = 1000
     template.logY = True
-    template.addSecondaryPlot(PRED_SF.theHistogram, "HISTE")
+    template.addSecondaryPlot(PRED_SF, "HISTE")
     
-    template.regionName = "Z+jets only"
+    template.regionName = region+", Z+jets only"
     jetind = "#geq3j" if (nJets == 3) else "=2j" 
     template.cutsText = jetind
     template.cutsSize/=0.7
@@ -141,9 +141,10 @@ def closureTestMC(var, nJets=2, dilepton="SF"):
     template.ratioLabel = "JZB>0/JZB<0"
     template.hasRatio = True
     
-    import errorConfig
-    ERR = getattr(errorConfig.DYPredError, "Inclusive").ERR[nJets]
-    template.addRatioErrorBySize("Mismatch of spectra", ERR, ROOT.kGreen, 1001, False)
+    if "met" in var:
+        import errorConfig
+        ERR = getattr(errorConfig.DYPredError, region).ERR[nJets]
+        template.addRatioErrorBySize("Mismatch of spectra", ERR, ROOT.kGreen, 1001, False)
     
     template.draw()
     template.plotPad.cd()
@@ -153,7 +154,7 @@ def closureTestMC(var, nJets=2, dilepton="SF"):
     leg.SetBorderSize(0)
     leg.SetTextSize(0.045)
     leg.AddEntry(OBS_SF,   "JZB>0", "PE")
-    leg.AddEntry(PRED_SF.theHistogram,  "JZB<0","l")
+    leg.AddEntry(PRED_SF,  "JZB<0","l")
     leg.Draw("same")
     
     if "met" in var:
@@ -165,7 +166,7 @@ def closureTestMC(var, nJets=2, dilepton="SF"):
         
         
     template.setFolderName("Tests")
-    template.saveAs("%s_%dj_%s_Closure_Test_MC"%(var,nJets,dilepton))
+    template.saveAs("%s_%dj_%s_%s_Closure_Test_MC"%(var,nJets,dilepton,region))
    
 def compareJZBforSamples():
     bkg = getBackgrounds("DY")
@@ -236,7 +237,7 @@ def main():
     t1 = time.time()
     processes = []
     #processes += [mp.Process(target=closureTestMC, args=(var, nJets)) for nJets in [2,3] for var in ["metDiffPlot"]]
-    processes += [mp.Process(target=closureTestMC, args=(var, nJets,dil)) for dil in ["SF"] for nJets in [2,3] for var in ["jzbPlot", "metPlot"]]
+    processes += [mp.Process(target=closureTestMC, args=(var, nJets,dil,region)) for dil in ["SF"] for nJets in [2,3] for var in ["jzbPlot"] for region in ["Inclusive", "Forward", "Central"]]
     for p in processes:
         p.start()
     for p in processes:
