@@ -564,6 +564,6 @@ class plotTemplate2D(plotTemplate):
     def __init__(self, mainConfig=None):
         plotTemplate.__init__(self, mainConfig)
         if mainConfig is not None:
-            if hasattr(mainConfig, plot2):
+            if hasattr(mainConfig, "plot2"):
                 if mainConfig.plot2 is not None:
                     self.labelY = mainConfig.plot2.xaxis
