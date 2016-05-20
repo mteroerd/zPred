@@ -56,8 +56,8 @@ def gaussianFit(histo, lowRange, upRange,step):
 
 def doPUCorrection(dilepton,plotData=True,nJets=2,extraArg=""):
     bkg = getBackgrounds("TT", "DY")
-    mainConfig = dataMCConfig.dataMCConfig(plot="nVerticesPlot",plot2="jzbPlot_Corrs_%dj"%(nJets),region="Inclusive",runName="Run2015_25ns",plotData=plotData,normalizeToData=False,plotRatio=False,signals=False,useTriggerEmulation=True,personalWork=True,preliminary=False,forPAS=False,forTWIKI=False,backgrounds=bkg,dontScaleTrig=False,plotSyst=False,doPUWeights=False, responseCorr=True)
-
+    mainConfig = dataMCConfig.dataMCConfig(plot="nVerticesPlot",plot2="jzbPlot_puCorr_%dj"%(nJets),region="Inclusive",runName="Run2015_25ns",plotData=plotData,normalizeToData=False,plotRatio=False,signals=False,useTriggerEmulation=True,personalWork=True,preliminary=False,forPAS=False,forTWIKI=False,backgrounds=bkg,dontScaleTrig=False,plotSyst=False,doPUWeights=False, responseCorr=True)
+    
     eventCounts = totalNumberOfGeneratedEvents(mainConfig.dataSetPath)  
     processes = []
     for background in mainConfig.backgrounds:
@@ -128,6 +128,15 @@ def doPUCorrection(dilepton,plotData=True,nJets=2,extraArg=""):
             fullHist.Add(hist,1)
     
     template.setPrimaryPlot(fullHist, "COLZ")
+    
+    pl = fullHist.ProfileX()
+    template.addSecondaryPlot(pl)
+    
+    fitLin = ROOT.TF1("","pol1",0, 30)
+    pl.Fit(fitLin)
+    
+    template.addSecondaryPlot(fitLin)
+    
     template.draw()
     template.setFolderName("PUCorr")
     dataInd = "Data" if plotData else "MC"
@@ -141,6 +150,7 @@ def doPUCorrection(dilepton,plotData=True,nJets=2,extraArg=""):
     errPoints = TGraphAsymmErrors()
     nBins = fullHist.GetYaxis().GetNbins()
     binning = [-1,5,8,11,14,17,30]
+    #binning = [-1,5,10,15,20,30]
     
     nPoints = 0
     ROOT.gStyle.SetOptFit(111)
