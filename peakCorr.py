@@ -57,7 +57,7 @@ def gaussianFit(histo, lowRange, upRange,step):
 def doPeakCorrection(dilepton,plotData=True, nJets=2,extraArg=""):
     bkg = getBackgrounds("TT", "DY")
 
-    mainConfig = dataMCConfig.dataMCConfig(plot="jzbPlot_Corrs_%dj"%(nJets),region="Inclusive",runName="Run2015_25ns",plotData=plotData,normalizeToData=False,plotRatio=False,signals=False,useTriggerEmulation=True,personalWork=True,preliminary=False,forPAS=False,forTWIKI=False,backgrounds=bkg,dontScaleTrig=False,plotSyst=False,doPUWeights=False,responseCorr=True, puCorr=True)
+    mainConfig = dataMCConfig.dataMCConfig(plot="jzbPlot_peakCorr_%dj"%(nJets),region="Inclusive",runName="Run2015_25ns",plotData=plotData,normalizeToData=False,plotRatio=False,signals=False,useTriggerEmulation=True,personalWork=True,preliminary=False,forPAS=False,forTWIKI=False,backgrounds=bkg,dontScaleTrig=False,plotSyst=False,doPUWeights=False,responseCorr=True, puCorr=True)
 
     eventCounts = totalNumberOfGeneratedEvents(mainConfig.dataSetPath)  
 
@@ -136,7 +136,8 @@ def doPeakCorrection(dilepton,plotData=True, nJets=2,extraArg=""):
     fitFunc = gaussianFit(fullHist,-60, 60, 1.6)
     template.addSecondaryPlot(fitFunc)
     
-    with open("shelves/%s.pkl"%(mainConfig.jzbType), "r+") as corrFile:
+    fileName = "%s.pkl"%(mainConfig.jzbType) if not mainConfig.onlyShift else "%s_onlyShift.pkl"%(mainConfig.jzbType)
+    with open("shelves/"+fileName, "r+") as corrFile:
         corrs = pickle.load(corrFile)
         corrFile.seek(0)
         corrFile.truncate()

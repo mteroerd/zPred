@@ -14,9 +14,10 @@ cutString =     {       "pos" : "(JZBCONDITION > 0)",
                         "zPeak":"(p4.M() < 101 && p4.M() > 81)"
                 }
 
-def configurePlot(plot, jzbType, plotData, responseCorr, puCorr, peakCorr,correctMET):
+def configurePlot(plot, jzbType, plotData, responseCorr, puCorr, peakCorr,correctMET,onlyShift):
         from defs import varToUse
-        with open("shelves/%s.pkl"%(jzbType), "r") as corrFile:
+        fileName = "%s.pkl"%(jzbType) if not onlyShift else "%s_onlyShift.pkl"%(jzbType)
+        with open("shelves/"+fileName, "r") as corrFile:
                 corrs = pickle.load(corrFile)
                 corrFile.close()
                 corrs = corrs[plotData]
@@ -37,7 +38,9 @@ def configurePlot(plot, jzbType, plotData, responseCorr, puCorr, peakCorr,correc
 class dataMCConfig:
         #jzbType = "unCorrMet"
         jzbType = "type-IMet"
-        #jzbType = "puppiMet"
+        
+        onlyShift = False
+        
         responseCorr = False
         puCorr = False
         peakCorr = False
@@ -125,9 +128,9 @@ class dataMCConfig:
                                 self.plot2.cuts = self.plot2.cuts + ")"
                 
                 
-                configurePlot(self.plot, self.jzbType, self.plotData, self.responseCorr, self.puCorr, self.peakCorr, self.correctMET)
+                configurePlot(self.plot, self.jzbType, self.plotData, self.responseCorr, self.puCorr, self.peakCorr, self.correctMET, self.onlyShift)
                 if plot2 != None:
-                        configurePlot(self.plot2, self.jzbType, self.plotData, self.responseCorr, self.puCorr, self.peakCorr, self.correctMET)
+                        configurePlot(self.plot2, self.jzbType, self.plotData, self.responseCorr, self.puCorr, self.peakCorr, self.correctMET, self.onlyShift)
                 
                 self.normalizeToData = normalizeToData
                 self.plotRatio = plotRatio

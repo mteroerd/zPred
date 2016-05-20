@@ -31,8 +31,13 @@ def main():
         
     parser.add_argument("-v", "--vars", dest="variables", action="append", default=[],
                           help="JZB types to use")
-
+    parser.add_argument("-s", "--standard", dest="standard", action="store_true", default=False)
+    parser.add_argument("-S", "--shift", dest="shift", action="store_true", default=False)
     args = parser.parse_args()
+    
+    if args.shift == False and args.standard == False:
+        args.shift = True
+        args.standard = True
     
     if args.variables == []:
         from defs import varToUse
@@ -40,10 +45,16 @@ def main():
     
     ensurePathExists("shelves/")
     for var in args.variables:
-        with open("shelves/%s.pkl"%(var), "w") as outputFile:
-            pickle.dump(corrections, outputFile)
-            outputFile.close()
-        print "initialized shelves/%s.pkl"%(var)
+        if args.standard:
+            with open("shelves/%s.pkl"%(var), "w") as outputFile:
+                pickle.dump(corrections, outputFile)
+                outputFile.close()
+            print "initialized shelves/%s.pkl"%(var)
+        if args.shift:
+            with open("shelves/%s_onlyShift.pkl"%(var), "w") as outputFile:
+                pickle.dump(corrections, outputFile)
+                outputFile.close()
+            print "initialized shelves/%s_onlyShift.pkl"%(var)
         
 if __name__ == "__main__":
     main()

@@ -18,28 +18,36 @@ from responseCorr import doResponseCorrection
 def doCorrs(var, args, extraArg):
     import dataMCConfig
     if not args.quiet: print "Calculating corrections for JZB type: %s"%(var)
-    if not os.path.isfile("shelves/%s.pkl"%(var)):
-        print "Shelve file shelves/%s.pkl does not exist yet, creating..."%(var)
-        os.system("python initPickle.py --vars %s"%(var))
+    if not dataMCConfig.dataMCConfig.onlyShift:
+        if not os.path.isfile("shelves/%s.pkl"%(var)):
+            print "Shelve file shelves/%s.pkl does not exist yet, creating..."%(var)
+            os.system("python initPickle.py --vars %s -s"%(var))
+    else:
+        if not os.path.isfile("shelves/%s_onlyShift.pkl"%(var)):
+            print "Shelve file shelves/%s_onlyShift.pkl does not exist yet, creating..."%(var)
+            os.system("python initPickle.py --vars %s -S"%(var))
+            
     if args.quiet or args.parallel:
         ROOT.gErrorIgnoreLevel = ROOT.kWarning
     dataMCConfig.dataMCConfig.jzbType = var
-    if not args.quiet: print "%s: Response corrections..." %(var)
-    if args.data:
-        doResponseCorrection("SF",True, extraArg=extraArg)
-    if args.mc:
-        doResponseCorrection("SF",False, extraArg=extraArg)
-    if not args.quiet: print "%s: Response corrections done." %(var)
     
-    if not args.quiet: print "%s: Pile-up peak corrections..."%(var)
-    if args.data:
-        doPUCorrection("SF",True,2, extraArg=extraArg)
-        doPUCorrection("SF",True,3, extraArg=extraArg)
-    if args.mc:    
-        doPUCorrection("SF",False,2, extraArg=extraArg)
-        doPUCorrection("SF",False,3, extraArg=extraArg)
-    if not args.quiet: print "%s: Pile-up peak corrections done."%(var)
-    
+    if not dataMCConfig.dataMCConfig.onlyShift:
+        if not args.quiet: print "%s: Response corrections..." %(var)
+        if args.data:
+            doResponseCorrection("SF",True, extraArg=extraArg)
+        if args.mc:
+            doResponseCorrection("SF",False, extraArg=extraArg)
+        if not args.quiet: print "%s: Response corrections done." %(var)
+        
+        if not args.quiet: print "%s: Pile-up peak corrections..."%(var)
+        if args.data:
+            doPUCorrection("SF",True,2, extraArg=extraArg)
+            doPUCorrection("SF",True,3, extraArg=extraArg)
+        if args.mc:    
+            doPUCorrection("SF",False,2, extraArg=extraArg)
+            doPUCorrection("SF",False,3, extraArg=extraArg)
+        if not args.quiet: print "%s: Pile-up peak corrections done."%(var)
+        
     if not args.quiet: print "%s: Peak corrections..." %(var)
     if args.data:
         doPeakCorrection("SF", True,2, extraArg=extraArg)
