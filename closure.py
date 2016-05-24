@@ -105,17 +105,25 @@ def produceHistogram(dilepton,mainConfig,stackIt = False,output=None, sort=None)
     
 
 def closureTestMC(var, nJets=2, dilepton="SF",region="Inclusive"):
-    bkg = getBackgrounds("DY")
+    bkg = getBackgrounds("DY", "DYTauTau")
     mainConfig_a = dataMCConfig.dataMCConfig(plot="%s_pos_%dj"%(var, nJets),region=region,runName="Run2015_25ns",plotData=False,normalizeToData=False,plotRatio=True,signals=False,useTriggerEmulation=True,personalWork=True,preliminary=False,forPAS=False,forTWIKI=False,backgrounds=bkg,dontScaleTrig=False,plotSyst=False,doPUWeights=False, responseCorr=True, puCorr=True, peakCorr=True,correctMET=False)
     mainConfig_b = dataMCConfig.dataMCConfig(plot="%s_neg_%dj"%(var, nJets),region=region,runName="Run2015_25ns",plotData=False,normalizeToData=False,plotRatio=True,signals=False,useTriggerEmulation=True,personalWork=True,preliminary=False,forPAS=False,forTWIKI=False,backgrounds=bkg,dontScaleTrig=False,plotSyst=False,doPUWeights=False, responseCorr=True, puCorr=True, peakCorr=True)
     
     template = plotTemplate(mainConfig_a)
     
     POS_SF = produceHistogram(dilepton,mainConfig_a,stackIt=False)
+    POS_OF = produceHistogram("EMu",mainConfig_a,stackIt=False)
     NEG_SF = produceHistogram(dilepton,mainConfig_b,stackIt=True)
-
+    NEG_OF = produceHistogram("EMu",mainConfig_b,stackIt=True)
+    
+    import corrections
+    R = {"SF" : getattr(corrections.rSFOF, region.lower()), "EE" : getattr(corrections.rEEOF, region.lower()), "MuMu" : getattr(corrections.rMMOF, region.lower())}
+    
+    
     OBS_SF = POS_SF.Clone()
+    OBS_SF.Add(POS_OF,-R[dilepton].valMC)
     PRED_SF = NEG_SF.theHistogram
+    PRED_SF.Add(NEG_OF.theHistogram,-R[dilepton].valMC)
 
     pred_err = ROOT.Double()
     pred = PRED_SF.IntegralAndError(0,PRED_SF.GetNbinsX(), pred_err)
@@ -127,7 +135,7 @@ def closureTestMC(var, nJets=2, dilepton="SF",region="Inclusive"):
     PRED_SF.SetMarkerSize(0)
 
     template.setPrimaryPlot(OBS_SF, "PE")
-    template.maximumScale = 1000
+    template.maximumScale = 100
     template.logY = True
     template.addSecondaryPlot(PRED_SF, "HISTE")
     

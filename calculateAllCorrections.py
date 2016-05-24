@@ -32,12 +32,13 @@ def doCorrs(var, args, extraArg):
     dataMCConfig.dataMCConfig.jzbType = var
     
     if not dataMCConfig.dataMCConfig.onlyShift:
-        if not args.quiet: print "%s: Response corrections..." %(var)
-        if args.data:
-            doResponseCorrection("SF",True, extraArg=extraArg)
-        if args.mc:
-            doResponseCorrection("SF",False, extraArg=extraArg)
-        if not args.quiet: print "%s: Response corrections done." %(var)
+        if not var == "type-IMet":
+            if not args.quiet: print "%s: Response corrections..." %(var)
+            if args.data:
+                doResponseCorrection("SF",True, extraArg=extraArg)
+            if args.mc:
+                doResponseCorrection("SF",False, extraArg=extraArg)
+            if not args.quiet: print "%s: Response corrections done." %(var)
         
         if not args.quiet: print "%s: Pile-up peak corrections..."%(var)
         if args.data:
