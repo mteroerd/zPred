@@ -152,7 +152,7 @@ def closureTestMC(var, nJets=2, dilepton="SF",region="Inclusive"):
     if "met" in var:
         import errorConfig
         ERR = getattr(errorConfig.DYPredError, region).ERR[nJets]
-        template.addRatioErrorBySize("Mismatch of spectra", ERR, ROOT.kGreen, 1001, False)
+        template.addRatioErrorBySize("Mismatch of spectra", ERR, ROOT.kGreen-6, 1001, False)
     
     template.draw()
     template.plotPad.cd()
@@ -173,7 +173,7 @@ def closureTestMC(var, nJets=2, dilepton="SF",region="Inclusive"):
         cutL.Draw("same")
         
         
-    template.setFolderName("Tests")
+    template.setFolderName("Tests/%d"%(mainConfig_a.correctionMode))
     template.saveAs("%s_%dj_%s_%s_Closure_Test_MC"%(var,nJets,dilepton,region))
    
 def compareJZBforSamples():
@@ -245,7 +245,7 @@ def main():
     t1 = time.time()
     processes = []
     #processes += [mp.Process(target=closureTestMC, args=(var, nJets)) for nJets in [2,3] for var in ["metDiffPlot"]]
-    processes += [mp.Process(target=closureTestMC, args=(var, nJets,dil,region)) for dil in ["SF"] for nJets in [2,3] for var in ["jzbPlot"] for region in ["Inclusive", "Forward", "Central"]]
+    processes += [mp.Process(target=closureTestMC, args=(var, nJets,dil,region)) for dil in ["SF"] for nJets in [2,3] for var in ["jzbPlot"] for region in ["Forward", "Central"]]
     for p in processes:
         p.start()
     for p in processes:
