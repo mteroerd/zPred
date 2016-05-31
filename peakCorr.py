@@ -54,10 +54,11 @@ def gaussianFit(histo, lowRange, upRange,step):
         fitFunc.SetRange(max(lowRange,mean-step*sigma),min(mean+step*sigma, upRange))
     return fitFunc    
 
-def doPeakCorrection(dilepton,plotData=True, nJets=2,extraArg=""):
+def doPeakCorrection(plotData=True, nJets=2, direction="Central", extraArg=""):
+    dilepton = "SF"
     bkg = getBackgrounds("TT", "DY")
 
-    mainConfig = dataMCConfig.dataMCConfig(plot="jzbPlot_peakCorr_%dj"%(nJets),region="Inclusive",runName="Run2015_25ns",plotData=plotData,normalizeToData=False,plotRatio=False,signals=False,useTriggerEmulation=True,personalWork=True,preliminary=False,forPAS=False,forTWIKI=False,backgrounds=bkg,dontScaleTrig=False,plotSyst=False,doPUWeights=False,responseCorr=True, puCorr=True)
+    mainConfig = dataMCConfig.dataMCConfig(plot="jzbPlot_peakCorr_%dj"%(nJets),region=direction,runName="Run2015_25ns",plotData=plotData,normalizeToData=False,plotRatio=False,signals=False,useTriggerEmulation=True,personalWork=True,preliminary=False,forPAS=False,forTWIKI=False,backgrounds=bkg,dontScaleTrig=False,plotSyst=False,doPUWeights=False,responseCorr=True, puCorr=True)
 
     eventCounts = totalNumberOfGeneratedEvents(mainConfig.dataSetPath)  
 
@@ -136,13 +137,13 @@ def doPeakCorrection(dilepton,plotData=True, nJets=2,extraArg=""):
     fitFunc = gaussianFit(fullHist,-60, 60, 1.6)
     template.addSecondaryPlot(fitFunc)
     
-    fileName = "%s.pkl"%(mainConfig.jzbType) if not mainConfig.onlyShift else "%s_onlyShift.pkl"%(mainConfig.jzbType)
+    fileName = "%s_%d.pkl"%(mainConfig.jzbType,mainConfig.correctionMode)
     with open("shelves/"+fileName, "r+") as corrFile:
         corrs = pickle.load(corrFile)
         corrFile.seek(0)
         corrFile.truncate()
         
-        corrs[mainConfig.plotData]["peak"][nJets==2] = fitFunc.GetParameter(1)
+        corrs[mainConfig.plotData][direction]["peak"][nJets==2] = fitFunc.GetParameter(1)
         pickle.dump(corrs, corrFile)
         corrFile.close()
     
@@ -161,15 +162,16 @@ def doPeakCorrection(dilepton,plotData=True, nJets=2,extraArg=""):
     template.draw()
     indicator = "Data" if mainConfig.plotData else "MC"
     
-    template.setFolderName("PUCorr")
-    template.saveAs("peakCorr_%s_%dj_%s"%(dilepton,nJets, indicator))
+    template.setFolderName("PeakCorr/%d"%(mainConfig.correctionMode))
+    template.saveAs("peakCorr_%s_%dj_%s_%s"%(dilepton,nJets,direction, indicator))
     
 
 def main():
-    doPeakCorrection("SF", True,2)
-    doPeakCorrection("SF", True,3)
-    doPeakCorrection("SF", False,2)
-    doPeakCorrection("SF", False,3)
+    for direction in ["Central", "Forward"]:
+        doPeakCorrection(True,  2, direction)
+        doPeakCorrection(True,  3, direction)
+        doPeakCorrection(False, 2, direction)
+        doPeakCorrection(False, 3, direction)
 
 if __name__ == "__main__":
     main()

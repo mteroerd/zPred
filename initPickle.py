@@ -8,36 +8,34 @@ from helpers import ensurePathExists
 
 def main():
     #corrections[Data][Correction]
-    corrections = {True:{}, False:{}}
-    corrections[True]["response"] = 0.0
-    corrections[True]["pu"] = {}
-    corrections[True]["pu"][False] = 0.0
-    corrections[True]["pu"][True] = 0.0
-    corrections[True]["peak"] = {}
-    corrections[True]["peak"][False] = 0.0
-    corrections[True]["peak"][True] = 0.0
-
-    corrections[False]["response"] = 0.0
-    corrections[False]["pu"] = {}
-    corrections[False]["pu"][False] = 0.0
-    corrections[False]["pu"][True] = 0.0
-    corrections[False]["peak"] = {}
-    corrections[False]["peak"][False] = 0.0
-    corrections[False]["peak"][True] = 0.0
-
+    # soon corrections[Data][Direction][Correction]
+    corrections = {}
+    for plotData in [True, False]:
+        corrections[plotData] = {}
+        for direction in ["Central", "Forward","Inclusive"]:
+            corrections[plotData][direction] = {}
+            
+            corrections[plotData][direction]["peak"] = {}
+            corrections[plotData][direction]["pu"] = {}
+            
+            corrections[plotData][direction]["response"] = 0.0
+            
+            corrections[plotData][direction]["pu"][False] = 0.0
+            corrections[plotData][direction]["pu"][True] = 0.0
+            
+            corrections[plotData][direction]["peak"][False] = 0.0
+            corrections[plotData][direction]["peak"][True] = 0.0
+    
     import argparse
 
     parser = argparse.ArgumentParser(description='Process some integers.')
         
     parser.add_argument("-v", "--vars", dest="variables", action="append", default=[],
                           help="JZB types to use")
-    parser.add_argument("-s", "--standard", dest="standard", action="store_true", default=False)
-    parser.add_argument("-S", "--shift", dest="shift", action="store_true", default=False)
+    parser.add_argument("-c", "--corrs", dest="correctionMode", type=int, action="store", default=-1,
+                          help="Which correction mode to use")
     args = parser.parse_args()
     
-    if args.shift == False and args.standard == False:
-        args.shift = True
-        args.standard = True
     
     if args.variables == []:
         from defs import varToUse
@@ -45,16 +43,17 @@ def main():
     
     ensurePathExists("shelves/")
     for var in args.variables:
-        if args.standard:
-            with open("shelves/%s.pkl"%(var), "w") as outputFile:
+        if args.correctionMode == -1:
+            for i in range(0,4):
+                with open("shelves/%s_%d.pkl"%(var,i), "w") as outputFile:
+                    pickle.dump(corrections, outputFile)
+                    outputFile.close()
+                print "initialized shelves/%s_%d.pkl"%(var,i)
+        else:
+            with open("shelves/%s_%d.pkl"%(var,args.correctionMode), "w") as outputFile:
                 pickle.dump(corrections, outputFile)
                 outputFile.close()
-            print "initialized shelves/%s.pkl"%(var)
-        if args.shift:
-            with open("shelves/%s_onlyShift.pkl"%(var), "w") as outputFile:
-                pickle.dump(corrections, outputFile)
-                outputFile.close()
-            print "initialized shelves/%s_onlyShift.pkl"%(var)
+            print "initialized shelves/%s_%d.pkl"%(var,args.correctionMode)
         
 if __name__ == "__main__":
     main()

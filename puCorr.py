@@ -54,9 +54,10 @@ def gaussianFit(histo, lowRange, upRange,step):
         fitFunc.SetRange(max(lowRange,mean-step*sigma),min(mean+step*sigma, upRange))
     return fitFunc    
 
-def doPUCorrection(dilepton,plotData=True,nJets=2,extraArg=""):
+def doPUCorrection(plotData=True,nJets=2,direction="Central",extraArg=""):
+    dilepton = "SF"
     bkg = getBackgrounds("TT", "DY")
-    mainConfig = dataMCConfig.dataMCConfig(plot="nVerticesPlot",plot2="jzbPlot_puCorr_%dj"%(nJets),region="Inclusive",runName="Run2015_25ns",plotData=plotData,normalizeToData=False,plotRatio=False,signals=False,useTriggerEmulation=True,personalWork=True,preliminary=False,forPAS=False,forTWIKI=False,backgrounds=bkg,dontScaleTrig=False,plotSyst=False,doPUWeights=False, responseCorr=True)
+    mainConfig = dataMCConfig.dataMCConfig(plot="nVerticesPlot",plot2="jzbPlot_puCorr_%dj"%(nJets),region=direction,runName="Run2015_25ns",plotData=plotData,normalizeToData=False,plotRatio=False,signals=False,useTriggerEmulation=True,personalWork=True,preliminary=False,forPAS=False,forTWIKI=False,backgrounds=bkg,dontScaleTrig=False,plotSyst=False,doPUWeights=False, responseCorr=True)
     
     eventCounts = totalNumberOfGeneratedEvents(mainConfig.dataSetPath)  
     processes = []
@@ -68,7 +69,7 @@ def doPUCorrection(dilepton,plotData=True,nJets=2,extraArg=""):
     treeEE = readTrees(mainConfig.dataSetPath, "EE")
     treeMuMu = readTrees(mainConfig.dataSetPath, "MuMu")
     treeEMu = readTrees(mainConfig.dataSetPath, "EMu")
- 
+    
     mainConfig.plot.addDilepton(dilepton)    
     plot = mainConfig.plot
     plot2 = mainConfig.plot2
@@ -172,12 +173,12 @@ def doPUCorrection(dilepton,plotData=True,nJets=2,extraArg=""):
     fitLine.SetParameter(1,0.5)
     errPoints.Fit(fitLine, "R%s"%(extraArg))
     
-    with open("shelves/%s.pkl"%(mainConfig.jzbType), "r+") as corrFile:        
+    with open("shelves/%s_%d.pkl"%(mainConfig.jzbType,mainConfig.correctionMode), "r+") as corrFile:        
         corrs = pickle.load(corrFile)
         corrFile.seek(0)
         corrFile.truncate()
         
-        corrs[mainConfig.plotData]["pu"][nJets==2] = fitLine.GetParameter(1)
+        corrs[mainConfig.plotData][direction]["pu"][nJets==2] = fitLine.GetParameter(1)
         pickle.dump(corrs, corrFile)
         corrFile.close()
     
@@ -200,16 +201,17 @@ def doPUCorrection(dilepton,plotData=True,nJets=2,extraArg=""):
     panel.SetY2NDC(0.38)
     template.draw()
     
-    template.setFolderName("PUCorr")
+    template.setFolderName("PUCorr/%d"%(mainConfig.correctionMode))
     dataInd = "Data" if plotData else "MC"
-    template.saveAs("puSlope_%dj_%s"%(nJets, dataInd))
+    template.saveAs("puSlope_%dj_%s_%s"%(nJets, direction, dataInd))
     
 
 def main():
-    doPUCorrection("SF",True,2)
-    doPUCorrection("SF",True,3)
-    doPUCorrection("SF",False,2)
-    doPUCorrection("SF",False,3)
+    for direction in ["Central", "Forward"]:
+        doPUCorrection(True,  2, direction)
+        doPUCorrection(True,  3, direction)
+        doPUCorrection(False, 2, direction)
+        doPUCorrection(False, 3, direction)
 
 if __name__ == "__main__":
     main()

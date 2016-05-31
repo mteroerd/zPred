@@ -14,13 +14,13 @@ cutString =     {       "pos" : "(JZBCONDITION > 0)",
                         "zPeak":"(p4.M() < 101 && p4.M() > 81)"
                 }
 
-def configurePlot(plot, jzbType, plotData, responseCorr, puCorr, peakCorr,correctMET,onlyShift):
+def configurePlot(plot, jzbType, plotData, direction, responseCorr, puCorr, peakCorr,correctMET,correctionMode):
         from defs import varToUse
-        fileName = "%s.pkl"%(jzbType) if not onlyShift else "%s_onlyShift.pkl"%(jzbType)
+        fileName = "%s_%d.pkl"%(jzbType,correctionMode)
         with open("shelves/"+fileName, "r") as corrFile:
                 corrs = pickle.load(corrFile)
                 corrFile.close()
-                corrs = corrs[plotData]
+                corrs = corrs[plotData][direction]
                 
                 for key in varToUse.keys():
                         plot.variable = plot.variable.replace(key, varToUse[key][jzbType])
@@ -39,7 +39,8 @@ class dataMCConfig:
         #jzbType = "unCorrMet"
         jzbType = "type-IMet"
         
-        onlyShift = False
+        onlyShift = True
+        correctionMode = 1 # 3=response+pu+peak, 2=pu+peak, 1=peak, 0=none
         
         responseCorr = False
         puCorr = False
@@ -126,11 +127,17 @@ class dataMCConfig:
                                 for l in plotList:
                                         self.plot2.cuts = self.plot2.cuts + " && %s"%(cutString[l])
                                 self.plot2.cuts = self.plot2.cuts + ")"
+                if "Inclusive" in region:
+                        self.direction = "Inclusive"
+                elif "Central" in region:
+                        self.direction = "Central"
+                elif "Forward" in region:
+                        self.direction = "Forward"
                 
                 
-                configurePlot(self.plot, self.jzbType, self.plotData, self.responseCorr, self.puCorr, self.peakCorr, self.correctMET, self.onlyShift)
+                configurePlot(self.plot, self.jzbType, self.plotData, self.direction, self.responseCorr, self.puCorr, self.peakCorr, self.correctMET, self.correctionMode)
                 if plot2 != None:
-                        configurePlot(self.plot2, self.jzbType, self.plotData, self.responseCorr, self.puCorr, self.peakCorr, self.correctMET, self.onlyShift)
+                        configurePlot(self.plot2, self.jzbType, self.plotData, self.direction, self.responseCorr, self.puCorr, self.peakCorr, self.correctMET, self.correctionMode)
                 
                 self.normalizeToData = normalizeToData
                 self.plotRatio = plotRatio

@@ -139,9 +139,10 @@ def jzbBinned(dilepton, plotData=True, corrs=False):
     template.setFolderName("JZBBinned")
     template.saveAs("binned_%s_%s"%(corrString, dataInd))
       
-def doResponseCorrection(dilepton,plotData,extraArg=""):
+def doResponseCorrection(plotData,direction="Central",extraArg=""):
+    dilepton = "SF"
     bkg = getBackgrounds("TT", "DY")
-    mainConfig = dataMCConfig.dataMCConfig(plot2="responsePlot",plot="ptllresponsePlot",region="Inclusive", plotRatio=False,runName="Run2015_25ns",plotData=plotData,personalWork=True,backgrounds=bkg)
+    mainConfig = dataMCConfig.dataMCConfig(plot2="responsePlot",plot="ptllresponsePlot",region=direction, plotRatio=False,runName="Run2015_25ns",plotData=plotData,personalWork=True,backgrounds=bkg)
 
     template = plotTemplate2D(mainConfig)        
     template.dilepton = dilepton
@@ -220,12 +221,12 @@ def doResponseCorrection(dilepton,plotData,extraArg=""):
     
     template.draw()
     
-    with open("shelves/%s.pkl"%(mainConfig.jzbType), "r+") as corrFile:
+    with open("shelves/%s_%d.pkl"%(mainConfig.jzbType,mainConfig.correctionMode), "r+") as corrFile:
         corrs = pickle.load(corrFile)
         
         corrFile.seek(0)
         corrFile.truncate()
-        corrs[mainConfig.plotData]["response"] = 1-fitFunc.GetParameter(0)
+        corrs[mainConfig.plotData][direction]["response"] = 1-fitFunc.GetParameter(0)
         pickle.dump(corrs, corrFile)
         corrFile.close()
     
@@ -238,12 +239,12 @@ def doResponseCorrection(dilepton,plotData,extraArg=""):
     leg.Draw("same")
     
     if mainConfig.plotData:
-        name = "Response_Data"
+        suffix = "Data"
     else:
-        name = "Response_MC"
+        suffix = "MC"
     
-    template.setFolderName("Response")
-    template.saveAs(name)
+    template.setFolderName("Response/%d"%(mainConfig.correctionMode))
+    template.saveAs("Response"+"_"+direction+"_"+suffix)
 
 def main():
     import multiprocessing as mp
@@ -252,7 +253,7 @@ def main():
 
     processes = []
     #processes += [mp.Process(target=jzbBinned, args=("SF", plotData, responseCorr)) for plotData in [False, True] for responseCorr in [False, True]]
-    processes += [mp.Process(target=doResponseCorrection, args=("SF", plotData)) for plotData in [False, True]]
+    processes += [mp.Process(target=doResponseCorrection, args=(plotData,direction)) for plotData in [False, True] for direction in ["Forward", "Central"]]
     for p in processes:
         p.start()
     for p in processes:
