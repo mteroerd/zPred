@@ -27,19 +27,10 @@ def doCorrs(var, args, extraArg):
         ROOT.gErrorIgnoreLevel = ROOT.kWarning
     dataMCConfig.dataMCConfig.jzbType = var
     dataMCConfig.dataMCConfig.correctionMode = args.correctionMode
-    
-    if args.correctionMode > 2:
-        if not args.quiet: print "%s: Response corrections..." %(var)
-        for direction in ["Central", "Forward"]:
-            if args.data:
-                doResponseCorrection(True, direction, extraArg=extraArg)
-            if args.mc:
-                doResponseCorrection(False, direction, extraArg=extraArg)
-        if not args.quiet: print "%s: Response corrections done." %(var)
-    
+
     if args.correctionMode > 1:
         if not args.quiet: print "%s: Pile-up peak corrections..."%(var)
-        for direction in ["Central", "Forward"]:
+        for direction in args.directions:
             if args.data:
                 doPUCorrection(True, 2, direction, extraArg=extraArg)
                 doPUCorrection(True, 3, direction, extraArg=extraArg)
@@ -47,10 +38,21 @@ def doCorrs(var, args, extraArg):
                 doPUCorrection(False, 2, direction, extraArg=extraArg)
                 doPUCorrection(False, 3, direction, extraArg=extraArg)
         if not args.quiet: print "%s: Pile-up peak corrections done."%(var)
+        
+    if args.correctionMode > 2:
+        if not args.quiet: print "%s: Response corrections..." %(var)
+        for direction in args.directions:
+            if args.data:
+                doResponseCorrection(True, 2, direction, extraArg=extraArg)
+                doResponseCorrection(True, 3, direction, extraArg=extraArg)
+            if args.mc:
+                doResponseCorrection(False, 2, direction, extraArg=extraArg)
+                doResponseCorrection(False, 3, direction, extraArg=extraArg)
+        if not args.quiet: print "%s: Response corrections done." %(var)
     
     if args.correctionMode > 0:
         if not args.quiet: print "%s: Peak corrections..." %(var)
-        for direction in ["Central", "Forward"]:
+        for direction in args.directions:
             if args.data:
                 doPeakCorrection(True, 2, direction, extraArg=extraArg)
                 doPeakCorrection(True, 3, direction, extraArg=extraArg)
@@ -66,6 +68,8 @@ def main():
     
     parser.add_argument("-v", "--vars", dest="variables", action="append", default=[],
                           help="JZB types to use")
+    parser.add_argument("-D", "--dirs", dest="directions", action="append", default=[],
+                          help="Which directions (Central/Forward/Inclusive)")
     parser.add_argument("-c", "--corrs", dest="correctionMode", type=int, action="store", default=-1,
                           help="Which correction mode to use")
     parser.add_argument("-q", "--quiet", action="store_true", dest="quiet", default=False,
@@ -82,6 +86,9 @@ def main():
     
     if args.correctionMode == -1:
         args.correctionMode = 3
+    
+    if args.directions == []:
+        args.directions = ["Central", "Forward"]
     
     if (not args.data) and (not args.mc):
         args.data = True

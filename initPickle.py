@@ -17,8 +17,10 @@ def main():
             
             corrections[plotData][direction]["peak"] = {}
             corrections[plotData][direction]["pu"] = {}
+            corrections[plotData][direction]["response"] = {}
             
-            corrections[plotData][direction]["response"] = 0.0
+            corrections[plotData][direction]["response"][False] = 0.0
+            corrections[plotData][direction]["response"][True] = 0.0
             
             corrections[plotData][direction]["pu"][False] = 0.0
             corrections[plotData][direction]["pu"][True] = 0.0

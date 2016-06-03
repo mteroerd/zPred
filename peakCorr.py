@@ -51,7 +51,7 @@ def gaussianFit(histo, lowRange, upRange,step):
         histo.Fit(fitFunc, "QLL0","", mean-step*sigma, mean+step*sigma)
         mean = fitFunc.GetParameter(1)
         sigma = fitFunc.GetParameter(2)
-        fitFunc.SetRange(max(lowRange,mean-step*sigma),min(mean+step*sigma, upRange))
+        fitFunc.SetRange(max(lowRange+0.001,mean-step*sigma),min(mean+step*sigma, upRange-0.001))
     return fitFunc    
 
 def doPeakCorrection(plotData=True, nJets=2, direction="Central", extraArg=""):
@@ -72,8 +72,6 @@ def doPeakCorrection(plotData=True, nJets=2, direction="Central", extraArg=""):
  
     mainConfig.plot.addDilepton(dilepton)    
     plot = mainConfig.plot
-    plot.nBins = 205
-    plot.yaxis = "Events / 2 GeV"
     
     scaleTree1 = 1.0
     scaleTree2 = 1.0
@@ -114,6 +112,7 @@ def doPeakCorrection(plotData=True, nJets=2, direction="Central", extraArg=""):
     template = plotTemplate(mainConfig)
     template.maximumScale = 1.1
     template.dilepton = dilepton
+    template.regionName = direction
     gStyle.SetOptFit(111)  
     
     if mainConfig.plotData:
@@ -122,18 +121,24 @@ def doPeakCorrection(plotData=True, nJets=2, direction="Central", extraArg=""):
     else:
         counts = {}
         stack = TheStack(processes,mainConfig.runRange.lumi,mainConfig.plot,tree1,tree2,1.0,scaleTree1,scaleTree2,saveIntegrals=True,counts=counts,doTopReweighting=mainConfig.doTopReweighting,theoUncert=mainConfig.theoUncert,doPUWeights=mainConfig.doPUWeights)
-        MCHists = []
-        for process in processes:
-            MCHists.append(process.createCombinedHistogram(mainConfig.runRange.lumi,plot,tree1,tree2,1,scaleTree1,scaleTree2,doTopReweighting=mainConfig.doTopReweighting, doPUWeights=mainConfig.doPUWeights))
-        fullHist = MCHists[0].Clone()
-        fullHist.Reset()
-        for hist in MCHists:
-            fullHist.Add(hist,1)
+        fullHist = stack.theHistogram
         fullHist.SetFillStyle(0)
         fullHist.SetMarkerSize(0)
         template.setPrimaryPlot(fullHist, "HISTE")
     
-    fullHist.GetXaxis().SetRangeUser(-60,60)
+    if mainConfig.plotData:
+        eMuHist = getDataHist(plot, treeEMu, "None")
+    else:
+        counts = {}
+        eMustack = TheStack(processes,mainConfig.runRange.lumi,mainConfig.plot,treeEMu,"None",1.0,scaleTree1,scaleTree2,saveIntegrals=True,counts=counts,doTopReweighting=mainConfig.doTopReweighting,theoUncert=mainConfig.theoUncert,doPUWeights=mainConfig.doPUWeights)
+        eMuHist = eMustack.theHistogram
+    
+    if mainConfig.plotData:
+        R = getattr(mainConfig.rSFOF, direction.lower()).val
+    else:
+        R = getattr(mainConfig.rSFOF, direction.lower()).valMC
+    fullHist.Add(eMuHist,-R)
+    
     fitFunc = gaussianFit(fullHist,-60, 60, 1.6)
     template.addSecondaryPlot(fitFunc)
     

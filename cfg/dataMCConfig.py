@@ -40,7 +40,7 @@ class dataMCConfig:
         jzbType = "type-IMet"
         
         onlyShift = True
-        correctionMode = 1 # 3=response+pu+peak, 2=pu+peak, 1=peak, 0=none
+        correctionMode = 3 # 3=response+pu+peak, 2=pu+peak, 1=peak, 0=none
         
         responseCorr = False
         puCorr = False

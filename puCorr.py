@@ -28,7 +28,7 @@ from defs import Regions
 from defs import Backgrounds
 from defs import Plot, getPlot
 from setTDRStyle import setTDRStyle
-gROOT.SetBatch(True)
+#gROOT.SetBatch(True)
 from helpers import *   
 import math
 
@@ -40,7 +40,8 @@ def gaussianFit(histo, lowRange, upRange,step):
     fitFunc = TF1("name", "gaus", lowRange, upRange)
     fitFunc.SetParName(1, "#mu")
     #first guess
-    mean = histo.GetBinCenter(histo.GetMaximumBin())
+    mean = histo.GetBinCenter(histo.FindBin(histo.GetMean()))
+    fitFunc.SetParameter(1,mean)
     #mean = histo.GetMean()
     #second guess
     sigma = (upRange-lowRange)/4
@@ -51,13 +52,13 @@ def gaussianFit(histo, lowRange, upRange,step):
         histo.Fit(fitFunc, "QLL0","", mean-step*sigma, mean+step*sigma)
         mean = fitFunc.GetParameter(1)
         sigma = fitFunc.GetParameter(2)
-        fitFunc.SetRange(max(lowRange,mean-step*sigma),min(mean+step*sigma, upRange))
+        fitFunc.SetRange(max(lowRange+0.001,mean-step*sigma),min(mean+step*sigma, upRange-0.001))
     return fitFunc    
 
 def doPUCorrection(plotData=True,nJets=2,direction="Central",extraArg=""):
     dilepton = "SF"
     bkg = getBackgrounds("TT", "DY")
-    mainConfig = dataMCConfig.dataMCConfig(plot="nVerticesPlot",plot2="jzbPlot_puCorr_%dj"%(nJets),region=direction,runName="Run2015_25ns",plotData=plotData,normalizeToData=False,plotRatio=False,signals=False,useTriggerEmulation=True,personalWork=True,preliminary=False,forPAS=False,forTWIKI=False,backgrounds=bkg,dontScaleTrig=False,plotSyst=False,doPUWeights=False, responseCorr=True)
+    mainConfig = dataMCConfig.dataMCConfig(plot="nVerticesPlot",plot2="jzbPlot_puCorr_%dj"%(nJets),region=direction,runName="Run2015_25ns",plotData=plotData,normalizeToData=False,plotRatio=False,signals=False,useTriggerEmulation=True,personalWork=True,preliminary=False,forPAS=False,forTWIKI=False,backgrounds=bkg,dontScaleTrig=False,plotSyst=False,doPUWeights=False, responseCorr=False)
     
     eventCounts = totalNumberOfGeneratedEvents(mainConfig.dataSetPath)  
     processes = []
@@ -128,20 +129,29 @@ def doPUCorrection(plotData=True,nJets=2,direction="Central",extraArg=""):
         for hist in MCHists:
             fullHist.Add(hist,1)
     
+    if mainConfig.plotData:
+        eMuHist = getData2DHist(plot,plot2, treeEMu, "None")
+    else:
+        eMuMCHists = []
+        for process in processes:
+            eMuMCHists.append(process.createCombined2DHistogram(mainConfig.runRange.lumi,plot,plot2,treeEMu,"None",1,scaleTree1,scaleTree2,doTopReweighting=mainConfig.doTopReweighting, doPUWeights=mainConfig.doPUWeights))
+        eMuHist = eMuMCHists[0].Clone()
+        eMuHist.Reset()
+        for hist in eMuMCHists:
+            eMuHist.Add(hist,1)
+    
+    if mainConfig.plotData:
+        R = getattr(mainConfig.rSFOF, direction.lower()).val
+    else:
+        R = getattr(mainConfig.rSFOF, direction.lower()).valMC
+    fullHist.Add(eMuHist,-R)
+    
     template.setPrimaryPlot(fullHist, "COLZ")
     
-    pl = fullHist.ProfileX()
-    template.addSecondaryPlot(pl)
-    
-    fitLin = ROOT.TF1("","pol1",0, 30)
-    pl.Fit(fitLin)
-    
-    template.addSecondaryPlot(fitLin)
-    
     template.draw()
-    template.setFolderName("PUCorr")
+    template.setFolderName("PUCorr/%d"%(mainConfig.correctionMode))
     dataInd = "Data" if plotData else "MC"
-    template.saveAs("pu2Dplot_%dj_%s"%(nJets,dataInd))
+    template.saveAs("pu2Dplot_%dj_%s_%s"%(nJets,direction,dataInd))
     
     
     template = plotTemplate(mainConfig)
@@ -150,14 +160,18 @@ def doPUCorrection(plotData=True,nJets=2,direction="Central",extraArg=""):
     
     errPoints = TGraphAsymmErrors()
     nBins = fullHist.GetYaxis().GetNbins()
-    binning = [-1,5,8,11,14,17,30]
-    #binning = [-1,5,10,15,20,30]
+    #binning = [-1,5,8,11,14,17,30]
+    binning = [-1,6,9,14,30]
     
     nPoints = 0
     ROOT.gStyle.SetOptFit(111)
     for i in range(0, len(binning)-1):       
         tempHist = fullHist.ProjectionY("", fullHist.GetXaxis().FindBin(binning[i]+1),fullHist.GetXaxis().FindBin(binning[i+1]), "e")
-        tempFunc = gaussianFit(tempHist,-40,40, 2)
+        #if tempHist.Integral() < 50:
+            #tempHist.Rebin(4)
+        #tempFunc = gaussianFit(tempHist,-40,40, 2)
+        tempFunc = ROOT.TF1("temf","gaus",-50,50)
+        tempHist.Fit(tempFunc,"R")
         ymean = tempFunc.GetParameter(1)
         yerr = tempFunc.GetParError(1)
         fullHist.GetXaxis().SetRange(fullHist.GetXaxis().FindBin(binning[i]+1),fullHist.GetXaxis().FindBin(binning[i+1]))
@@ -175,7 +189,7 @@ def doPUCorrection(plotData=True,nJets=2,direction="Central",extraArg=""):
     
     with open("shelves/%s_%d.pkl"%(mainConfig.jzbType,mainConfig.correctionMode), "r+") as corrFile:        
         corrs = pickle.load(corrFile)
-        corrFile.seek(0)
+        corrFile.seek(0) 
         corrFile.truncate()
         
         corrs[mainConfig.plotData][direction]["pu"][nJets==2] = fitLine.GetParameter(1)
@@ -186,6 +200,7 @@ def doPUCorrection(plotData=True,nJets=2,direction="Central",extraArg=""):
     template.cutsText = jetInd
     template.labelX = fullHist.GetXaxis().GetTitle()
     template.labelY = "JZB Peak Position [GeV]"
+    template.regionName = direction
 
     template.setPrimaryPlot(errPoints, "APE")
     template.addSecondaryPlot(fitLine,"")
@@ -207,6 +222,7 @@ def doPUCorrection(plotData=True,nJets=2,direction="Central",extraArg=""):
     
 
 def main():
+    #doPUCorrection(True, 3, "Forward")
     for direction in ["Central", "Forward"]:
         doPUCorrection(True,  2, direction)
         doPUCorrection(True,  3, direction)

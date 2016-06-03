@@ -139,13 +139,14 @@ def jzbBinned(dilepton, plotData=True, corrs=False):
     template.setFolderName("JZBBinned")
     template.saveAs("binned_%s_%s"%(corrString, dataInd))
       
-def doResponseCorrection(plotData,direction="Central",extraArg=""):
+def doResponseCorrection(plotData,nJets,direction="Central",extraArg=""):
     dilepton = "SF"
     bkg = getBackgrounds("TT", "DY")
-    mainConfig = dataMCConfig.dataMCConfig(plot2="responsePlot",plot="ptllresponsePlot",region=direction, plotRatio=False,runName="Run2015_25ns",plotData=plotData,personalWork=True,backgrounds=bkg)
+    mainConfig = dataMCConfig.dataMCConfig(plot2="responsePlot_%dj"%(nJets),plot="ptllresponsePlot",region=direction, plotRatio=False,runName="Run2015_25ns",plotData=plotData,personalWork=True,backgrounds=bkg,puCorr=True)
 
     template = plotTemplate2D(mainConfig)        
     template.dilepton = dilepton
+    template.regionName = direction
     template.logZ = True
     template.redrawPrimary = False
     
@@ -163,6 +164,7 @@ def doResponseCorrection(plotData,direction="Central",extraArg=""):
     mainConfig.plot.addDilepton(dilepton)    
     plot = mainConfig.plot
     plot2 = mainConfig.plot2
+    
 
     scaleTree1 = 1.0
     scaleTree2 = 1.0
@@ -211,6 +213,23 @@ def doResponseCorrection(plotData,direction="Central",extraArg=""):
         for hist in MCHists:
             fullHist.Add(hist,1)
     
+    if mainConfig.plotData:
+        eMuHist = getData2DHist(plot,plot2, treeEMu, "None")
+    else:
+        eMuMCHists = []
+        for process in processes:
+            eMuMCHists.append(process.createCombined2DHistogram(mainConfig.runRange.lumi,plot,plot2,treeEMu,"None",1,scaleTree1,scaleTree2,doTopReweighting=mainConfig.doTopReweighting, doPUWeights=mainConfig.doPUWeights))
+        eMuHist = eMuMCHists[0].Clone()
+        eMuHist.Reset()
+        for hist in eMuMCHists:
+            eMuHist.Add(hist,1)
+    
+    if mainConfig.plotData:
+        R = getattr(mainConfig.rSFOF, direction.lower()).val
+    else:
+        R = getattr(mainConfig.rSFOF, direction.lower()).valMC
+    fullHist.Add(eMuHist,-R)
+    
     errPoints = fullHist.ProfileX("", 2, fullHist.GetNbinsY()-1)
     fitFunc = TF1("fitfunc", "pol0",100,400)
     errPoints.Fit(fitFunc, "R%s"%(extraArg))
@@ -226,7 +245,7 @@ def doResponseCorrection(plotData,direction="Central",extraArg=""):
         
         corrFile.seek(0)
         corrFile.truncate()
-        corrs[mainConfig.plotData][direction]["response"] = 1-fitFunc.GetParameter(0)
+        corrs[mainConfig.plotData][direction]["response"][nJets==2] = 1-fitFunc.GetParameter(0)
         pickle.dump(corrs, corrFile)
         corrFile.close()
     
@@ -244,16 +263,16 @@ def doResponseCorrection(plotData,direction="Central",extraArg=""):
         suffix = "MC"
     
     template.setFolderName("Response/%d"%(mainConfig.correctionMode))
-    template.saveAs("Response"+"_"+direction+"_"+suffix)
+    template.saveAs("Response"+"_"+str(nJets)+"j_"+direction+"_"+suffix)
 
 def main():
     import multiprocessing as mp
     import time
     t1 = time.time()
-
+    doResponseCorrection(True,3,"Central")
     processes = []
     #processes += [mp.Process(target=jzbBinned, args=("SF", plotData, responseCorr)) for plotData in [False, True] for responseCorr in [False, True]]
-    processes += [mp.Process(target=doResponseCorrection, args=(plotData,direction)) for plotData in [False, True] for direction in ["Forward", "Central"]]
+    #processes += [mp.Process(target=doResponseCorrection, args=(plotData,direction)) for plotData in [False, True] for direction in ["Forward", "Central"]]
     for p in processes:
         p.start()
     for p in processes:
