@@ -267,6 +267,7 @@ class plotTemplate:
                 self.jzbType = mainConfig.jzbType
             self.personalWork = mainConfig.personalWork
             self.preliminary = mainConfig.preliminary
+            self.forTWIKI = mainConfig.forTWIKI
             self.plotData = mainConfig.plotData
             self.hasRatio = mainConfig.plotRatio
             self.lumiInt = mainConfig.runRange.printval
@@ -430,7 +431,7 @@ class plotTemplate:
         self.denominators   = []
         self.nominators     = []
         self.ratioPairs     = []
-        self.pathName       = ""
+        self.pathName       = "fig/"
         self.folderName     = ""
         self.canvas         = None
         self.plotPad        = None

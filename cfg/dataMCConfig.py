@@ -11,7 +11,12 @@ cutString =     {       "pos" : "(JZBCONDITION > 0)",
                         "neg" : "(JZBCONDITION < 0)",
                         "2j"  : "(nJets == 2)",
                         "3j"  : "(nJets >= 3)",
-                        "zPeak":"(p4.M() < 101 && p4.M() > 81)"
+                        "zPeak":"(p4.M() < 101 && p4.M() > 81)",
+                        "nVert06" : "(nVertices >= 0 && nVertices <=6)",
+                        "nVert79" : "(nVertices >= 7 && nVertices <=9)",
+                        "nVert1014" : "(nVertices >= 10 && nVertices <=14)",
+                        "nVert1530" : "(nVertices >= 15 && nVertices <=30)",
+                        "jzb50" : "(JZBCONDITION < 50 && JZBCONDITION > -50)"
                 }
 
 def configurePlot(plot, jzbType, plotData, direction, responseCorr, puCorr, peakCorr,correctMET,correctionMode):
@@ -109,6 +114,8 @@ class dataMCConfig:
                                 self.plot.cuts = self.plot.cuts + "&& %s"%(cutString[l])
                         self.plot.cuts = self.plot.cuts + ")"
                 
+                if "p4.M()> 81 && p4.M() < 101" in self.plot.cuts:
+                        self.plot.cuts = self.plot.cuts.replace("deltaR > 0.3", "deltaR > 0.1")
                 
                 if plot2 != None:
                         plotList = None
@@ -127,6 +134,10 @@ class dataMCConfig:
                                 for l in plotList:
                                         self.plot2.cuts = self.plot2.cuts + " && %s"%(cutString[l])
                                 self.plot2.cuts = self.plot2.cuts + ")"
+                
+                        if "p4.M()> 81 && p4.M() < 101" in self.plot2.cuts:
+                                self.plot2.cuts = self.plot2.cuts.replace("deltaR > 0.3", "deltaR > 0.1")
+                
                 if "Inclusive" in region:
                         self.direction = "Inclusive"
                 elif "Central" in region:

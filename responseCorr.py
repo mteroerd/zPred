@@ -34,7 +34,7 @@ from plotTemplate import plotTemplate, plotTemplate2D
 from sampleConfig import getBackgrounds
 
 def jzbBinned(dilepton, plotData=True, corrs=False):
-    bkg = getBackgrounds("DY", "TT")
+    bkg = getBackgrounds("DY", "TT", "DYTauTau")
     mainConfig = dataMCConfig.dataMCConfig(plot="jzbPlot",region="Inclusive",runName="Run2015_25ns",plotData=plotData,normalizeToData=False,plotRatio=False,signals=False,useTriggerEmulation=True,personalWork=True, preliminary=False,forPAS=False,forTWIKI=False,backgrounds=bkg,dontScaleTrig=False,plotSyst=False,doPUWeights=False)
 
     eventCounts = totalNumberOfGeneratedEvents(mainConfig.dataSetPath)  
@@ -231,7 +231,7 @@ def doResponseCorrection(plotData,nJets,direction="Central",extraArg=""):
     fullHist.Add(eMuHist,-R)
     
     errPoints = fullHist.ProfileX("", 2, fullHist.GetNbinsY()-1)
-    fitFunc = TF1("fitfunc", "pol0",100,400)
+    fitFunc = TF1("fitfunc", "pol0",100,600)
     errPoints.Fit(fitFunc, "R%s"%(extraArg))
     
     template.setPrimaryPlot(fullHist, "COLZ")
@@ -269,7 +269,7 @@ def main():
     import multiprocessing as mp
     import time
     t1 = time.time()
-    doResponseCorrection(True,3,"Central")
+    doResponseCorrection(False,3,"Central")
     processes = []
     #processes += [mp.Process(target=jzbBinned, args=("SF", plotData, responseCorr)) for plotData in [False, True] for responseCorr in [False, True]]
     #processes += [mp.Process(target=doResponseCorrection, args=(plotData,direction)) for plotData in [False, True] for direction in ["Forward", "Central"]]

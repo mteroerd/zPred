@@ -56,9 +56,9 @@ def gaussianFit(histo, lowRange, upRange,step):
 
 def doPeakCorrection(plotData=True, nJets=2, direction="Central", extraArg=""):
     dilepton = "SF"
-    bkg = getBackgrounds("TT", "DY")
+    bkg = getBackgrounds("TT", "DY", "DYTauTau")
 
-    mainConfig = dataMCConfig.dataMCConfig(plot="jzbPlot_peakCorr_%dj"%(nJets),region=direction,runName="Run2015_25ns",plotData=plotData,normalizeToData=False,plotRatio=False,signals=False,useTriggerEmulation=True,personalWork=True,preliminary=False,forPAS=False,forTWIKI=False,backgrounds=bkg,dontScaleTrig=False,plotSyst=False,doPUWeights=False,responseCorr=True, puCorr=True)
+    mainConfig = dataMCConfig.dataMCConfig(plot="jzbPlot_peakCorr_%dj#jzb50"%(nJets),region=direction,runName="Run2015_25ns",plotData=plotData,normalizeToData=False,plotRatio=False,signals=False,useTriggerEmulation=True,personalWork=True,preliminary=False,forPAS=False,forTWIKI=False,backgrounds=bkg,dontScaleTrig=False,plotSyst=False,doPUWeights=False,responseCorr=True, puCorr=True)
 
     eventCounts = totalNumberOfGeneratedEvents(mainConfig.dataSetPath)  
 
@@ -139,7 +139,9 @@ def doPeakCorrection(plotData=True, nJets=2, direction="Central", extraArg=""):
         R = getattr(mainConfig.rSFOF, direction.lower()).valMC
     fullHist.Add(eMuHist,-R)
     
-    fitFunc = gaussianFit(fullHist,-60, 60, 1.6)
+    #fitFunc = gaussianFit(fullHist,-50, 50, 1.6)
+    fitFunc = ROOT.TF1("fitf", "gaus",-50,50)
+    fullHist.Fit(fitFunc,"RQ")
     template.addSecondaryPlot(fitFunc)
     
     fileName = "%s_%d.pkl"%(mainConfig.jzbType,mainConfig.correctionMode)
@@ -168,7 +170,7 @@ def doPeakCorrection(plotData=True, nJets=2, direction="Central", extraArg=""):
     indicator = "Data" if mainConfig.plotData else "MC"
     
     template.setFolderName("PeakCorr/%d"%(mainConfig.correctionMode))
-    template.saveAs("peakCorr_%s_%dj_%s_%s"%(dilepton,nJets,direction, indicator))
+    template.saveAs("peakCorr_%dj_%s_%s"%(nJets,direction, indicator))
     
 
 def main():
