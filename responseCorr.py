@@ -141,9 +141,9 @@ def jzbBinned(dilepton, plotData=True, corrs=False):
       
 def doResponseCorrection(plotData,nJets,direction="Central",extraArg=""):
     dilepton = "SF"
-    bkg = getBackgrounds("TT", "DY")
+    bkg = getBackgrounds("TT", "DY", "DYTauTau")
     mainConfig = dataMCConfig.dataMCConfig(plot2="responsePlot_%dj"%(nJets),plot="ptllresponsePlot",region=direction, plotRatio=False,runName="Run2015_25ns",plotData=plotData,personalWork=True,backgrounds=bkg,puCorr=True)
-
+    
     template = plotTemplate2D(mainConfig)        
     template.dilepton = dilepton
     template.regionName = direction

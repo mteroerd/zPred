@@ -126,7 +126,7 @@ def produceHistogram(dilepton,mainConfig,stackIt = False,output=None, sort=None)
 
 def doPUCorrection(plotData=True,nJets=2,direction="Central",extraArg=""):
     dilepton = "SF"
-    bkg = getBackgrounds("TT","DYAll")
+    bkg = getBackgrounds("TT","DY","DYTauTau")
 
     nPoints = 0
     setTDRStyle()
@@ -155,7 +155,6 @@ def doPUCorrection(plotData=True,nJets=2,direction="Central",extraArg=""):
         tempHist.SetMinimum(0)
         can = ROOT.TCanvas()
         tempFunc = ROOT.TF1("temf","gaus",-50,50)
-        tempFunc.SetParameter(1,3)
         tempHist.Fit(tempFunc,"RQ")
         tempHist.Draw()
         tempFunc.Draw("same")
@@ -176,10 +175,10 @@ def doPUCorrection(plotData=True,nJets=2,direction="Central",extraArg=""):
     ROOT.gStyle.SetErrorX(0.5)
     template.dilepton = dilepton
     template.changeScale = False
-    fitLine = TF1("fitLine", "pol1",0,30)
+    fitLine = TF1("fitLine", "pol1",0,31)
     fitLine.SetParName(1, "#beta")
-    fitLine.SetParameter(0,5)
-    fitLine.SetParameter(1,0.1)
+    fitLine.SetParameter(1,0.1747)
+    fitLine.SetParameter(0,3.78)
     pointsHist.Fit(fitLine, "R%s"%(extraArg))
     
     with open("shelves/%s_%d.pkl"%(mainConfig.jzbType,mainConfig.correctionMode), "r+") as corrFile:        
@@ -190,18 +189,18 @@ def doPUCorrection(plotData=True,nJets=2,direction="Central",extraArg=""):
         corrs[mainConfig.plotData][direction]["pu"][nJets==2] = fitLine.GetParameter(1)
         pickle.dump(corrs, corrFile)
         corrFile.close()
-                      
+    
     jetInd = "#geq3j" if nJets == 3 else "=2j"
     template.cutsText = jetInd
     template.labelX = "N_{Vertices}"
     template.labelY = "JZB Peak Position [GeV]"
     template.regionName = direction
-                      
+
     template.setPrimaryPlot(pointsHist, "pe")
     template.addSecondaryPlot(fitLine,"")
-                      
-    template.draw()   
-                      
+    
+    template.draw()
+    
     template.canvas.Update()
     pointsHist.GetListOfFunctions()
     panel = pointsHist.GetListOfFunctions().FindObject("stats")
@@ -209,14 +208,14 @@ def doPUCorrection(plotData=True,nJets=2,direction="Central",extraArg=""):
     panel.SetX2NDC(0.95)
     panel.SetY1NDC(0.14)
     panel.SetY2NDC(0.38)
-    template.draw()   
-                      
+    template.draw()
+    
     template.setFolderName("PUCorr/%d"%(mainConfig.correctionMode))
     dataInd = "Data" if plotData else "MC"
     template.saveAs("puSlope_%dj_%s_%s"%(nJets, direction, dataInd))
-                      
-                      
-def main():           
+    
+
+def main():
     doPUCorrection(False, 3, "Central")
     doPUCorrection(False, 3, "Forward")
     #for direction in ["Central", "Forward"]:
@@ -227,4 +226,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-                    

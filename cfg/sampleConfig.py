@@ -1,5 +1,5 @@
 drellYan__ = ["DrellYanLO"]
-drellYanAll__ = ["DrellYanTauTauLO","DrellYanLO"]
+drellYanAll__ = ["DrellYanTauTauLO","DrellYanLO","DrellYanTauTauLOHT0to100","DrellYanLOHT0to100"]
 drellYanTauTau__ = ["DrellYanTauTauLO"]
 ttbar__ = ["TT_Powheg"]
 other__ = ["SingleTop", "Rare", "Diboson", "DrellYanTauTauLO", "DrellYanTauTauLOHT0to100", "WJets"]

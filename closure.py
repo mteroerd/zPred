@@ -117,7 +117,11 @@ def closureTestMC(var, nJets=2, dilepton="SF",region="Inclusive"):
     NEG_OF = produceHistogram("EMu",mainConfig_b,stackIt=True)
     
     import corrections
-    R = {"SF" : getattr(corrections.rSFOF, region.lower()), "EE" : getattr(corrections.rEEOF, region.lower()), "MuMu" : getattr(corrections.rMMOF, region.lower())}
+    R = {   
+            "SF" : getattr(corrections.rSFOF, region.lower()), 
+            "EE" : getattr(corrections.rEEOF, region.lower()), 
+            "MuMu" : getattr(corrections.rMMOF, region.lower())
+        }
     
     
     OBS_SF = POS_SF.Clone()
@@ -140,8 +144,10 @@ def closureTestMC(var, nJets=2, dilepton="SF",region="Inclusive"):
     template.addSecondaryPlot(PRED_SF, "HISTE")
     
     template.regionName = region+", Z+jets only"
-    jetind = "#geq3j" if (nJets == 3) else "=2j" 
-    template.cutsText = jetind
+    jetInd = "#geq3j" if (nJets == 3) else "=2j" 
+    if "ATLAS" in var:
+        jetInd = "#geq3j, ATLAS" if (nJets == 3) else "=2j, ATLAS" 
+    template.cutsText = jetInd
     template.cutsSize/=0.7
 
     template.dilepton = dilepton
@@ -155,6 +161,9 @@ def closureTestMC(var, nJets=2, dilepton="SF",region="Inclusive"):
         template.addRatioErrorBySize("Mismatch of spectra", ERR, ROOT.kGreen-6, 1001, False)
     elif "jzb" in var and nJets==3:
         ERR = 0.3
+        template.addRatioErrorBySize("Mismatch of spectra", ERR, ROOT.kGreen-6, 1001, False)
+    elif "jzb" in var and nJets==2:
+        ERR = 0.5
         template.addRatioErrorBySize("Mismatch of spectra", ERR, ROOT.kGreen-6, 1001, False)
     
     template.draw()
@@ -248,9 +257,9 @@ def main():
     t1 = time.time()
     processes = []
     #processes += [mp.Process(target=closureTestMC, args=(var, nJets)) for nJets in [2,3] for var in ["metDiffPlot"]]
-    processes += [mp.Process(target=closureTestMC, args=(var, nJets,dil,region)) for dil in ["SF"] for nJets in [2,3] for var in ["jzbPlot"] for region in ["Forward", "Central"]]
+    #processes += [mp.Process(target=closureTestMC, args=(var, nJets,dil,region)) for dil in ["SF"] for nJets in [2,3] for var in ["jzbPlot"] for region in ["Forward", "Central"]]
     #processes += [mp.Process(target=closureTestMC, args=(var, nJets,dil,region)) for dil in ["SF"] for nJets in [2,3] for var in ["metPlot"] for region in ["Forward", "Central"]]
-    #processes += [mp.Process(target=closureTestMC, args=(var, nJets,dil,region)) for dil in ["SF"] for nJets in [2,3] for var in ["jzbPlot_ATLAS"] for region in ["Inclusive","Forward", "Central"]]
+    processes += [mp.Process(target=closureTestMC, args=(var, nJets,dil,region)) for dil in ["SF"] for nJets in [2,3] for var in ["jzbPlot_ATLAS"] for region in ["Forward", "Central"]]
     for p in processes:
         p.start()
     for p in processes:

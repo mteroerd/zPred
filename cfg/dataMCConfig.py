@@ -5,7 +5,27 @@ from locations import locations
 from defs import getRegion, getPlot, getRunRange, Backgrounds
 
 import ROOT
-from helpers import readTrees, getDataHist, TheStack, totalNumberOfGeneratedEvents, Process, applyCorrections
+from helpers import readTrees, getDataHist, TheStack, totalNumberOfGeneratedEvents, Process
+
+def applyCorrections(plot, corrs, responseCorr=False, puCorr=False, peakCorr=False, mode="none"):
+        if "nJets == 2" in plot.cuts:
+                twoJets = True
+        else:
+                twoJets = False
+                
+        resp = corrs["response"][twoJets] if responseCorr else 0.0
+        pu   = corrs["pu"][twoJets]  if puCorr       else 0.0
+        peak = corrs["peak"][twoJets]if peakCorr     else 0.0
+        if mode == "cut":
+                plot.cuts = plot.cuts.format(response=resp,pileup=pu,peakshift=peak)
+        elif mode == "var":
+                plot.variable = plot.variable.format(response=resp,pileup=pu,peakshift=peak)
+        else:
+                print "applyCorrections: Invalid mode given"
+                import sys
+                sys.exit()
+                
+                
 
 cutString =     {       "pos" : "(JZBCONDITION > 0)",
                         "neg" : "(JZBCONDITION < 0)",
@@ -114,9 +134,7 @@ class dataMCConfig:
                                 self.plot.cuts = self.plot.cuts + "&& %s"%(cutString[l])
                         self.plot.cuts = self.plot.cuts + ")"
                 
-                if "p4.M()> 81 && p4.M() < 101" in self.plot.cuts:
-                        self.plot.cuts = self.plot.cuts.replace("deltaR > 0.3", "deltaR > 0.1")
-                
+
                 if plot2 != None:
                         plotList = None
                         if "#" in plot2:
@@ -134,9 +152,6 @@ class dataMCConfig:
                                 for l in plotList:
                                         self.plot2.cuts = self.plot2.cuts + " && %s"%(cutString[l])
                                 self.plot2.cuts = self.plot2.cuts + ")"
-                
-                        if "p4.M()> 81 && p4.M() < 101" in self.plot2.cuts:
-                                self.plot2.cuts = self.plot2.cuts.replace("deltaR > 0.3", "deltaR > 0.1")
                 
                 if "Inclusive" in region:
                         self.direction = "Inclusive"

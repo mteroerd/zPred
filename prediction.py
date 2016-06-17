@@ -360,11 +360,11 @@ def main():
     pred = combineResultsNew(True)
     #pred = combineResults(True)
     
-    #print "PRED MC"
+    print "PRED MC"
     #pred = combineResults(False)
     #pred = combineResultsNew(False)
 
-    #print "OBS MC"
+    print "OBS MC"
     #obs = combineObsMC()
 
 
